@@ -1,0 +1,126 @@
+package com.example.book_web.service.impl;
+
+import com.example.book_web.Exception.DataNotFoundException;
+import com.example.book_web.dto.RoleDTO;
+import com.example.book_web.entity.Permission;
+import com.example.book_web.entity.Role;
+import com.example.book_web.entity.User;
+import com.example.book_web.repository.PermissionRepository;
+import com.example.book_web.repository.RoleRepository;
+import com.example.book_web.repository.UserRepository;
+import com.example.book_web.response.RoleDetailResponse;
+import com.example.book_web.response.RoleResponse;
+import com.example.book_web.service.RoleService; // Thêm interface
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class RoleServiceImpl implements RoleService {
+    private final RoleRepository roleRepository;
+    private final PermissionRepository permissionRepository;
+    private final UserRepository userRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleResponse> getAllRoles() {
+        return roleRepository.findAllRoles();
+    }
+
+    /**
+     * @param
+     * @return
+     * @throws Exception
+     */
+    @Override
+    @Transactional
+    public Role createRole(RoleDTO roleCreateRequest) throws Exception {
+        Role role = roleCreateRequest.getRole();
+        roleRepository.save(role);
+        List<User> users = new ArrayList<>();
+        for (Long userId : roleCreateRequest.getUserIds()) {
+            Optional<User> existingUser = userRepository.findById(userId);
+            if (existingUser.isEmpty()) {
+                throw new DataNotFoundException("User with ID " + userId + " not found.");
+            }
+            users.add(existingUser.get());
+        }
+       List<Permission> permissions = new ArrayList<>();
+        for (Long permissionId : roleCreateRequest.getPermissionIds()) {
+            Optional<Permission> existingPermission = permissionRepository.findById(permissionId);
+            if (existingPermission.isEmpty()) {
+                throw new DataNotFoundException("Permission with ID " + permissionId + " not found.");
+            }
+            permissions.add(existingPermission.get());
+        }
+        role.setPermissions(permissions);
+        role.setUsers(users);
+        return roleRepository.save(role);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public RoleDetailResponse getRoleDetail(Long id) {
+        Role role =  roleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+
+        return RoleDetailResponse.builder()
+                .name(role.getName())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public Role updateRole(Long id, RoleDTO role) throws Exception{
+        Role existingRole = roleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+
+
+        if (role.getRole().getName() != null && !role.getRole().getName().trim().isEmpty()) {
+            if (role.getRole().getName().equals(existingRole.getName()) ) {
+                throw new IllegalStateException("Role name '" +role.getRole().getName() + "' is already taken");
+            }
+            existingRole.setName(role.getRole().getName());
+        }
+        existingRole.getUsers().clear();
+        existingRole.getPermissions().clear();
+        List<User> users = new ArrayList<>();
+        for (Long userId : role.getUserIds()) {
+            Optional<User> existingUser = userRepository.findById(userId);
+            if (existingUser.isEmpty()) {
+                throw new DataNotFoundException("User with ID " + userId + " not found.");
+            }
+            users.add(existingUser.get());
+        }
+        List<Permission> permissions = new ArrayList<>();
+        for (Long permissionId : role.getPermissionIds()) {
+            Optional<Permission> existingPermission = permissionRepository.findById(permissionId);
+            if (existingPermission.isEmpty()) {
+                throw new DataNotFoundException("Permission with ID " + permissionId + " not found.");
+            }
+            permissions.add(existingPermission.get());
+        }
+        existingRole.setPermissions(permissions);
+        existingRole.setUsers(users);
+
+
+
+
+      return   roleRepository.save(existingRole);
+    }
+
+    @Override
+    @Transactional
+    public void deleteRole(Long id) {
+        if (!roleRepository.existsById(id)) {
+            throw new RuntimeException("Role not found with id: " + id);
+        }
+        roleRepository.deleteById(id);
+    }
+}
