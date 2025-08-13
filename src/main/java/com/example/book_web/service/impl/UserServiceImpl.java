@@ -43,26 +43,19 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public String login(AuthenticationRequest request) throws Exception {
+    public String login(AuthenticationRequest request)  {
 
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
-
-
             User user = userRepository.findByUsername(request.getUsername())
-                    .orElseThrow(() -> new UsernameNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_NOT_EXIST)));
+                    .orElseThrow(() -> new DataNotFoundException(MessageKeys.USER_NOT_EXIST,"400"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.PASSWORD_NOT_MATCH));
         }
-
-
             String token = jwtService.generateToken(user.getUsername());
-
             return token;
-
-
     }
 
     @Override
@@ -79,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
            Optional<UserResponse> user = userRepository.findUserById(id);
            if (user.isEmpty()){
-             throw new DataNotFoundException("Khong tim thay user","400");
+             throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_NAME_NOT_FOUND),"400");
            }
             return user.get();
 

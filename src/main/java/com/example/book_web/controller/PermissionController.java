@@ -1,5 +1,7 @@
 package com.example.book_web.controller;
 
+import com.example.book_web.Base.ResponseDto;
+import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.PermissionDTO;
 import com.example.book_web.entity.Permission;
@@ -27,33 +29,15 @@ public class PermissionController {
     @PostMapping("/create")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_CREATE_PERMISSION')")
-    public ResponseEntity<?> createPermission(@RequestBody PermissionDTO permissionDTO) throws Exception{
-        try {
-            permissionService.createPermission(permissionDTO);
-            return ResponseEntity.ok(localizationUtils.getLocalizedMessage(MessageKeys.INSERT_CATEGORY_SUCCESSFULLY));
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-
-        }
-
+    public ResponseEntity<?> createPermission(@RequestBody PermissionDTO permissionDTO){
+            return ResponseConfig.success(permissionService.createPermission(permissionDTO),"Thanh cong");
     }
     @PutMapping("/update")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_UPDATE_PERMISSION')")
-    public ResponseEntity<BaseResponse> updatePermission(@RequestBody PermissionDTO permissionDTO) throws Exception{
-        try {
-            permissionService.updatePermission(permissionDTO);
-            return ResponseEntity.ok(BaseResponse.builder()
-                            .message("Update permission successfully")
-                            .data(permissionDTO.getName())
-                    .build());
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(BaseResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
+    public ResponseEntity<ResponseDto<Permission>> updatePermission(@RequestBody PermissionDTO permissionDTO){
+
+            return ResponseConfig.success(permissionService.updatePermission(permissionDTO));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -61,26 +45,21 @@ public class PermissionController {
     @PreAuthorize("hasAuthority('ROLE_DELETE_PERMISSION')")
     public ResponseEntity<?> deletePermission(@PathVariable Long id){
         permissionService.deletePermission(id);
-      return   ResponseEntity.ok("Delete thanh cong");
+      return   ResponseConfig.success(null,"Thanh cong");
 
     }
     @GetMapping()
     @PreAuthorize("hasAuthority('ROLE_VIEW_PERMISSION')")
-    public  ResponseEntity<List<PermissionDTO>> findAllPermission(){
-      List<PermissionDTO> permissions = permissionService.getAllPermission();
-        return ResponseEntity.ok(permissions);
+    public  ResponseEntity<ResponseDto<List<PermissionDTO>>> findAllPermission(){
+
+        return ResponseConfig.success(permissionService.getAllPermission(),"Thanh cong");
     }
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_VIEW_PERMISSION')")
-    public  ResponseEntity<List<String>> getDetailPermissionUser(@PathVariable Long id) throws Exception{
-        try {
-            List<String> permissions = permissionService.getDetailPermission(id);
-            return ResponseEntity.ok(permissions);
+    public  ResponseEntity<ResponseDto<List<String>>> getDetailPermissionUser(@PathVariable Long id){
+            return ResponseConfig.success(permissionService.getDetailPermission(id));
         }
-        catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonList(e.getMessage()));
-        }
-    }
+
 
 
 }

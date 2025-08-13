@@ -16,4 +16,12 @@ public class ResponseConfig<T> {
         return new ResponseEntity(responseDto, HttpStatus.OK);
     }
 
+    public static <T> ResponseEntity<ResponseDto<T>> success(T body,String message) {
+        ResponseDto responseDto = ResponseDto.builder()
+                .data(body).code(SUCCESS_CODE)
+                .message(message)
+                .build();
+        return new ResponseEntity(responseDto, HttpStatus.OK);
+    }
+
 }

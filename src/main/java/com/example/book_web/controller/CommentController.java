@@ -1,5 +1,7 @@
 package com.example.book_web.controller;
 
+import com.example.book_web.Base.ResponseDto;
+import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.CommentDTO;
 import com.example.book_web.dto.CreateCommentDTO;
@@ -26,80 +28,40 @@ public class CommentController {
     @PostMapping("/create")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_CREATE_COMMENT')")
-    public ResponseEntity<ApiResponse> createComment(
+    public ResponseEntity<?> createComment(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CreateCommentDTO dto) {
-        try {
-            Comment createdComment = commentService.createComment(authHeader,dto);
-            return ResponseEntity.ok(ApiResponse.builder()
-                            .data(createdComment)
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.CREATE_COMMENT))
+            return ResponseConfig.success(commentService.createComment(authHeader,dto),"Thanh cong");
 
-                    .build());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
     }
     @GetMapping("/post/{postId}")
     @PreAuthorize("hasAuthority('ROLE_VIEW_COMMENT')")
-    public ResponseEntity<List<CommentDTO>> getCommentsByPost(@PathVariable Long postId) {
-        List<CommentDTO> comments = commentService.getCommentTreeByPostId(postId);
-        return ResponseEntity.ok(comments);
+    public ResponseEntity<ResponseDto<List<CommentDTO>>> getCommentsByPost(@PathVariable Long postId) {
+        return ResponseConfig.success(commentService.getCommentTreeByPostId(postId),"Thanh cong");
+
     }
     @PutMapping("/update/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_UPDATE_COMMENT')")
-    public ResponseEntity<ApiResponse> updateComment(@PathVariable Long id ,
+    public ResponseEntity<?> updateComment(@PathVariable Long id ,
                                                       @RequestHeader("Authorization") String token,
                                                       @RequestBody CommentDTO commentDTO)
-            throws Exception{
-        try {
-            commentService.updateComment(token ,id,commentDTO);
-            return ResponseEntity.ok(ApiResponse.builder()
-                            .data(commentDTO)
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.UPDATE_COMMENT))
-                    .build());
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
-
+            {
+            return ResponseConfig.success(commentService.updateComment(token,id,commentDTO),"Thanh cong");
     }
 
     @DeleteMapping("/delete/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_DELETE_COMMENT')")
-    public ResponseEntity<ApiResponse> deleteResponse(@PathVariable Long id){
-        commentService.deleteComment(id);
-        return ResponseEntity.ok(ApiResponse.builder()
-                        .message(localizationUtils.getLocalizedMessage(MessageKeys.DELETE_COMMENT))
-                .build());
+    public ResponseEntity<?> deleteResponse(@PathVariable Long id){
+        return ResponseConfig.success(null,"Thanh cong");
 
     }
     @GetMapping("/detail/{id}")
     @PreAuthorize("hasAuthority('ROLE_VIEW_CATEGORY')")
-    public ResponseEntity<ApiResponse> getCommentDetail(@PathVariable Long id) throws Exception{
-        try {
-          Comment comment =   commentService.getCommentById(id);
-            return ResponseEntity.ok(ApiResponse.builder()
-                            .data(comment)
+    public ResponseEntity<?> getCommentDetail(@PathVariable Long id) {
 
-                    .build());
+            return ResponseConfig.success(commentService.getCommentById(id),"Thanh cong");
         }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(ApiResponse
-                    .builder()
-                            .message(e.getMessage())
-                    .build());
-        }
-
-
-    }
-
-
 
 }

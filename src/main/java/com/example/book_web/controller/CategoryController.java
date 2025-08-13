@@ -1,5 +1,7 @@
 package com.example.book_web.controller;
 
+import com.example.book_web.Base.ResponseDto;
+import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.CategoryDTO;
 import com.example.book_web.entity.Category;
@@ -26,85 +28,39 @@ public class CategoryController {
     private final LocalizationUtils localizationUtils;
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_VIEW_CATEGORY')")
-    public ResponseEntity<ApiResponse> getAllCategory() throws Exception{
-        try {
-            List<Category> categories = categoryService.getAllCategories();
-            return ResponseEntity.ok(ApiResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.DATA_EXISTING))
-                            .code(200)
-                            .data(categories)
-                    .build());
-
-        }catch (Exception e) {
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message("Load field")
-
-
-                    .build());
-        }
+    public ResponseEntity<?> getAllCategory() {
+        return ResponseConfig.success(categoryService.getAllCategories(),"Thanh cong");
     }
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_CATEGORY')")
-    public ResponseEntity<ApiResponse> createCategory(@RequestBody CategoryDTO categoryDTO){
-        try {
-            Category category = categoryService.createCategory(categoryDTO);
-            return ResponseEntity.ok(
-                    ApiResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.INSERT_CATEGORY_SUCCESSFULLY))
-                            .build()
-            );
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
+    public ResponseEntity<?> createCategory(@RequestBody CategoryDTO categoryDTO){
+
+            return ResponseConfig.success(categoryService.createCategory(categoryDTO));
+
     }
     @PutMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_CATEGORY')")
-    public ResponseEntity<ApiResponse> updateCategory( @RequestBody CategoryDTO categoryDTO){
-        try {
-            Category category = categoryService.updateCategory(categoryDTO);
-            return ResponseEntity.ok(ApiResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.UPDATE_CATEGORY_SUCCESSFULLY))
-                            .data(category)
-                    .build());
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.UPDATE_CATEGORY_SUCCESSFULLY))
-                    .build());
-        }
+    public ResponseEntity<?> updateCategory( @RequestBody CategoryDTO categoryDTO){
+            return ResponseConfig.success(categoryService.updateCategory(categoryDTO),"Thanh cong");
+
     }
 
     @DeleteMapping("/delete/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_DELETE_CATEGORY')")
-    public ResponseEntity<ApiResponse>deleteCategory(@PathVariable Long id) throws Exception{
-        try {
+    public ResponseEntity<?>deleteCategory(@PathVariable Long id) {
+
             categoryService.deleteCategory(id);
-            return ResponseEntity.ok(ApiResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.DELETE_CATEGORY_SUCCESSFULLY))
-                    .build());
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
+            return ResponseConfig.success(null,"Thanh cong");
+
+
     }
 
     @GetMapping("/statistics/{id}")
-    public ResponseEntity<List<String>> detailCategory(@PathVariable Long id) throws Exception{
-        try {
-            return ResponseEntity.ok(categoryService.getCategoryDetail(id));
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(Collections.singletonList(e.getMessage()));
-        }
+    public ResponseEntity<ResponseDto<List<String>>> detailCategory(@PathVariable Long id) {
+        return ResponseConfig.success(categoryService.getCategoryDetail(id), "Thanh cong");
+
     }
-
-
 
 }

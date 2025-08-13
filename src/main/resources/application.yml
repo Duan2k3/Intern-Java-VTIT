@@ -30,10 +30,10 @@ spring:
   messages:
     basename: i18n/messages
     encoding: UTF-8
-    fallback-to-system-locale: false
-    mvc:
-      locale: en
-      locale-resolver: fixed
+
+    web:
+      locale: vi
+      locale-resolver: FIXED
   mail:
     host: smtp.gmail.com
     port: 587

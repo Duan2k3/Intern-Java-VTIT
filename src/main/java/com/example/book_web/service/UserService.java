@@ -13,7 +13,7 @@ import java.util.List;
 public interface UserService {
 
 
-    String login(AuthenticationRequest request) throws Exception;
+    String login(AuthenticationRequest request) ;
 
      List<UserResponse> getAllUsers();
      UserResponse userDetail(Long id) ;

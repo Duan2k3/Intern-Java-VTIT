@@ -9,7 +9,7 @@ public interface CategoryService {
     List<Category> getAllCategories();
     Category createCategory(CategoryDTO categoryDTO) ;
     Category updateCategory( CategoryDTO categoryDTO) ;
-    void deleteCategory(Long id) throws Exception;
+    void deleteCategory(Long id) ;
     List<String> getCategoryDetail(Long id) ;
 
 }

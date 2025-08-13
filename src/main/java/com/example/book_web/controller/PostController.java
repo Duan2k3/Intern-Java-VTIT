@@ -1,5 +1,7 @@
 package com.example.book_web.controller;
 
+import com.example.book_web.Base.ResponseDto;
+import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.dto.PostDTO;
 import com.example.book_web.entity.Post;
 import com.example.book_web.enums.PostStatus;
@@ -23,86 +25,57 @@ public class PostController {
     @PostMapping("/create")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_CREATE_POST')")
-    public ResponseEntity<?> createPost(@RequestBody PostDTO postDTO) throws Exception{
-        try {
-            Post post = postService.createPost(postDTO);
-            return ResponseEntity.ok("Create successfully");
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> createPost(@RequestBody PostDTO postDTO) {
+            return ResponseConfig.success(postService.createPost(postDTO),"Thanh cong");
 
     }
     @PutMapping("/update/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_UPDATE_POST')")
-    public ResponseEntity<?> updatePost( @PathVariable Long id ,@RequestBody PostDTO postDTO) throws Exception{
-        try {
-            Post post = postService.updatePost(id,postDTO);
-            return ResponseEntity.ok("Update successfully");
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> updatePost( @PathVariable Long id ,@RequestBody PostDTO postDTO) {
+            return ResponseConfig.success(postService.updatePost(id,postDTO),"Thanh cong");
+
     }
     @GetMapping("/pending")
     @PreAuthorize("hasAuthority('ROLE_CREATE_POST')")
-    public ResponseEntity<List<PostResponse>> getPendingPosts() throws Exception{
-            List<PostResponse> pendingPosts = postService.getPostsByStatus(PostStatus.PENDING);
-            return ResponseEntity.ok(pendingPosts);
-
-
+    public ResponseEntity<ResponseDto<List<PostResponse>>> getPendingPosts(){
+        return ResponseConfig.success(postService.getPostsByStatus(PostStatus.PENDING),"Thanh cong");
     }
 
     @GetMapping("/approve")
     @PreAuthorize("hasAuthority('ROLE_CREATE_POST')")
-    public ResponseEntity<List<PostResponse>> publicPosts() throws Exception{
+    public ResponseEntity<ResponseDto<List<PostResponse>>> publicPosts(){
         List<PostResponse> pendingPosts = postService.getPublicPosts();
-        return ResponseEntity.ok(pendingPosts);
+        return ResponseConfig.success(postService.getPublicPosts());
 
     }
 
     @PutMapping("/approve/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_UPDATE_POST')")
-    public ResponseEntity<?> approvePost(@PathVariable Long id) throws Exception{
-
-            Post approvedPost = postService.approvePost(id);
-            return ResponseEntity.ok("Post has approve " + id);
+    public ResponseEntity<?> approvePost(@PathVariable Long id){
+            return ResponseConfig.success(postService.approvePost(id),"Thanh cong");
 
     }
 
 
     @PutMapping("/reject/{id}")
     @PreAuthorize("hasAuthority('ROLE_CREATE_POST')")
-    public ResponseEntity<?> rejectPost(@PathVariable Long id) throws Exception {
-        Post rejectedPost = postService.rejectPost(id);
-        return ResponseEntity.ok("Post has reject + " + id);
+    public ResponseEntity<?> rejectPost(@PathVariable Long id){
+        return ResponseConfig.success(postService.rejectPost(id),"Thanh cong");
     }
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('ROLE_DELETE_POST')")
-    public ResponseEntity<BaseResponse> deletePost(@PathVariable Long id){
-        try {
-            postService.deletePost(id);
-            return ResponseEntity.ok(BaseResponse.builder()
-                    .message("Delete successfully")
-                    .build());
-        }
+    public ResponseEntity<?> deletePost(@PathVariable Long id){
 
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(BaseResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
+            postService.deletePost(id);
+            return ResponseConfig.success(null,"Thanh cong");
+
     }
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_VIEW_POST')")
     public ResponseEntity<?> getPostWithComments(@PathVariable Long id) {
-        try {
-            PostDTO postDTO = postService.getPostWithComments(id);
-            return ResponseEntity.ok(postDTO);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+            return ResponseConfig.success(postService.getPostWithComments(id),"Thanh cong");
+
     }
 }

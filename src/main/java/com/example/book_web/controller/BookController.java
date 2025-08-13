@@ -1,6 +1,8 @@
 package com.example.book_web.controller;
 
+import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.Exception.CategoryNotFoundException;
+import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.BookDTO;
 import com.example.book_web.entity.Book;
@@ -47,57 +49,25 @@ public class BookController {
     private final BookServiceRedis productRedisService;
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_BOOK')")
-    public ResponseEntity<ApiResponse> createBook(@RequestBody BookDTO bookDTO)throws  Exception{
-        try {
-            Book book = bookService.createBook(bookDTO);
-            return ResponseEntity.ok(ApiResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.CREATE_BOOK))
-                            .data(bookDTO)
-                    .build());
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(e.getMessage())
-
-                    .build());
-        }
-
+    public ResponseEntity<?> createBook(@RequestBody BookDTO bookDTO){
+            return ResponseConfig.success(bookService.createBook(bookDTO),"Thanh cong");
     }
 
     @PutMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_BOOK')")
     @Transactional
-    public ResponseEntity<ApiResponse> updateBook( @RequestBody BookDTO bookDTO) throws Exception{
-        try {
-            Book book = bookService.updateBook(bookDTO);
-            return ResponseEntity.ok(ApiResponse.builder()
-                            .message("Update user successfully")
-                            .data(book)
-                    .build());
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
+    public ResponseEntity<?> updateBook( @RequestBody BookDTO bookDTO) {
+            return ResponseConfig.success(bookService.updateBook(bookDTO),"Thanh cong");
+
 
     }
 
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('ROLE_DELETE_BOOK')")
-    public ResponseEntity<ApiResponse> deleteBook(@PathVariable Long id) throws Exception {
-        try {
-
+    public ResponseEntity<?> deleteBook(@PathVariable Long id) {
             bookService.deleteBook(id);
-          return   ResponseEntity.ok(ApiResponse.builder()
-                          .message(localizationUtils.getLocalizedMessage(MessageKeys.DELETE_BOOK))
-                  .build());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
+          return ResponseConfig.success(null,"Thanh cong");
 
     }
 
@@ -122,7 +92,6 @@ public class BookController {
         Sort sort = sortDir.equalsIgnoreCase("desc") ?
                 Sort.by(sortBy).descending() :
                 Sort.by(sortBy).ascending();
-//        Pageable pageable = PageRequest.of(page, limit, Sort.by("id").ascending());
         Pageable pageable = PageRequest.of(page, limit, sort);
 
 
@@ -134,8 +103,6 @@ public class BookController {
         response.setTotalElements(bookPage.getTotalElements());
         response.setCurrentPage(bookPage.getNumber());
         return ResponseEntity.ok(response);
-
-
 
     }
 
@@ -150,8 +117,6 @@ public class BookController {
             return ResponseEntity.status(500).body("Lỗi khi import: " + ex.getMessage());
         }
     }
-
-
 
 
     @GetMapping("/redis")

@@ -10,5 +10,5 @@ public interface PermissionService {
     Permission updatePermission( PermissionDTO permissionDTO) ;
     void deletePermission(Long id);
     List<PermissionDTO> getAllPermission();
-    List<String> getDetailPermission(Long id) throws Exception;
+    List<String> getDetailPermission(Long id) ;
 }

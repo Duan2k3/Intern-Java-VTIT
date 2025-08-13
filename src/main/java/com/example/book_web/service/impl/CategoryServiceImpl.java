@@ -60,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void deleteCategory(Long id) throws Exception {
+    public void deleteCategory(Long id)  {
        Optional<Category> category = categoryRepository.findById(id);
        if(category.isEmpty()){
            throw new DataNotFoundException("Category not existing","400");

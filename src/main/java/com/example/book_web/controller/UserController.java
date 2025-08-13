@@ -47,21 +47,12 @@ public class UserController {
             UserResponse user = userService.userDetail(id) ;
             return ResponseConfig.success(user);
 
-
-
     }
 
-
     @PutMapping("/update")
-
     @PreAuthorize("hasAuthority('ROLE_UPDATE_USER')")
-    public ResponseEntity<ApiResponse> updateUser( @RequestBody UserDTO userDto) {
-        userService.updateUser( userDto);
-        return ResponseEntity.ok(ApiResponse.builder()
-                        .message(localizationUtils.getLocalizedMessage(MessageKeys.UPDATE_USER))
-                        .data(userDto)
-
-                .build());
+    public ResponseEntity<?> updateUser( @RequestBody UserDTO userDto) {
+        return ResponseConfig.success(userService.updateUser(userDto));
 
     }
 
@@ -70,18 +61,9 @@ public class UserController {
     @DeleteMapping("/delete/{id}")
 
     @PreAuthorize("hasAuthority('ROLE_DELETE_USER')")
-    public ResponseEntity<ApiResponse> deleteUser(@PathVariable Long id) {
-        try {
-            userService.deleteUser(id);
-            return ResponseEntity.ok(ApiResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.DELETE_USER))
-                    .build());
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+       return ResponseConfig.success(null);
 
 
     }
@@ -112,40 +94,21 @@ public class UserController {
                 .currentPages(userPage.getNumber())
                 .totalPages(userPage.getTotalPages())
                 .build());
+
     }
 
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@RequestBody AuthenticationRequest request) throws Exception{
-        try {
-           String token =  userService.login(request);
-           return ResponseEntity.ok(ApiResponse.builder()
-                           .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
-                           .data(token)
-                   .build());
-        }
-        catch (Exception e ){
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED))
-                    .build());
-        }
+    public ResponseEntity<?> login(@RequestBody AuthenticationRequest request){
+       return ResponseConfig.success(userService.login(request),MessageKeys.LOGIN_SUCCESSFULLY);
         }
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_USER')")
-    public ResponseEntity<ApiResponse> createUser(UserDTO userDTO) throws Exception{
-       try {
+    public ResponseEntity<?> createUser(@RequestBody  UserDTO userDTO) {
+
            User user =  userService.createUser(userDTO);
-           return ResponseEntity.ok(ApiResponse.builder()
-                   .data(userDTO)
-                   .message(localizationUtils.getLocalizedMessage(MessageKeys.REGISTER_SUCCESSFULLY))
-                   .build());
-       }
-       catch (Exception e){
-           return ResponseEntity.ok(ApiResponse.builder()
-                           .message(e.getMessage())
-                   .build());
-       }
+           return ResponseConfig.success(user);
 
     }
 

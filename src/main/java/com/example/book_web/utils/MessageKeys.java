@@ -31,6 +31,20 @@ public class MessageKeys {
     public static final String DELETE_USER= "user.delete";
     public static final String UPDATE_USER= "user.update";
 
+    //Validate Request User
+    public static final String USER_NAME_NOT_FOUND = "user.username.notfound";
 
 
+    public static class USER{
+        public static final String USER_NAME_NOT_BLANK = "user.user_name_not_blank";
+        public static final String PASSWORD_NOT_BLANK = "user.password_not_blank";
+        public static final String FULLNAME_NOT_BLANK = "user.full_name_not_blank";
+        public static final String PHONE_NUMBER_NOT_BLANK = "user.phone_number_not_blank";
+        public static final String IDENTITY_NUMBER_NOT_BLANK = "user.identity_number_not_blank";
+        public static final String AGE_NOT_NULL = "user.age_not_blank";
+        public static final String ADDRESS_NOT_BLANK = "user.address_not_blank";
+
+        private USER(){
+        }
+    }
 }

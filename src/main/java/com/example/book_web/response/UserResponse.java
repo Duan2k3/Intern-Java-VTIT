@@ -11,13 +11,12 @@ import lombok.*;
 
 public class UserResponse {
 
-    @JsonProperty("user_name")
     private String username;
 
     private String password;
 
-
     private String address;
+
     private String fullname;
 
 }
