@@ -2,6 +2,8 @@ package com.example.book_web.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,11 +30,16 @@ public class User implements UserDetails {
     @Column(name = "user_name", nullable = false, length = 20)
     private String username;
 
-    @Column(nullable = false, length = 60)
+    @Column(name = "password", nullable = false, length = 60)
     private String password;
 
-    @Column(length = 100)
+    @Column(name = "fullname", length = 100)
     private String fullname;
+
+    @Column(name = "email", nullable = false)
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không hợp lệ")
+    private String email;
 
     @Column(name = "phone_number", length = 15)
     private String phoneNumber;
@@ -83,7 +90,7 @@ public class User implements UserDetails {
         Set<GrantedAuthority> authorities = new HashSet<>();
         for (Role role : roles) {
             for (Permission permission : role.getPermissions()) {
-                authorities.add(new SimpleGrantedAuthority(permission.getName())); // VD: ROLE_UPDATE_USER
+                authorities.add(new SimpleGrantedAuthority(permission.getName()));
             }
         }
         return authorities;

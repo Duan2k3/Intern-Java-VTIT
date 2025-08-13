@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,6 +20,10 @@ public interface BookRepository extends JpaRepository<Book,Long> {
              "LOWER(b.authors) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
              "LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " )
      Page<Book> findByKeyWord(@Param("keyword") String keyword, Pageable pageable);
+
+     @Query("SELECT b.title FROM Book b")
+     List<String> findAllTitles();
+
 
 
 }

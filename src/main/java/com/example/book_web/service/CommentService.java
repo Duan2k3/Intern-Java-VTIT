@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface CommentService {
 
-    Comment createComment(CreateCommentDTO comment) throws Exception;
+    Comment createComment(String token ,CreateCommentDTO comment) throws Exception;
     Comment getCommentById(Long id) throws Exception;
-    Comment updateComment(Long id, CommentDTO comment) throws Exception;
+    Comment updateComment(String token ,Long id, CommentDTO comment) throws Exception;
     void deleteComment(Long id);
     List<CommentDTO> getCommentTreeByPostId(Long postId);
 }

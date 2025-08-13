@@ -11,28 +11,31 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
+//@EnableMethodSecurity
+@EnableWebSecurity(debug = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableWebMvc
 @RequiredArgsConstructor
-@EnableMethodSecurity
+
 public class SecurityConfig {
     private final UserRepository userRepository;
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        return username -> userRepository.findByUsername(username)
-//                .orElseThrow(() -> new UsernameNotFoundException("Cannot find user with username = " + username));
-//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -56,22 +59,22 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) 
+                )
+                .requestCache(requestCache -> requestCache.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/library/user/login",
                                 "/api/v1/library/user/create").permitAll()
-//                        .requestMatchers("/api/v1/library/user/update/**").permitAll()
-//                        .requestMatchers("/api/v1/library/user/delete/**").permitAll()
-//                        .requestMatchers("/api/v1/library/user/**").permitAll()
-//                        .requestMatchers("/api/v1/library/role/**").permitAll()
                         .requestMatchers("/api/v1/library/categories/statistics/**").permitAll()
-//                        .requestMatchers("/api/v1/library/books/**").permitAll()
-//                        .requestMatchers("/api/v1/library/permission/**").permitAll()
-//                        .requestMatchers("/api/v1/library/borrow/**").permitAll()
-//                        .requestMatchers("/api/v1/library/post/**").permitAll()
-//                        .requestMatchers("/api/v1/library/comment/**").permitAll()
+                        .requestMatchers("/api/v1/library/books/images/**").permitAll()
                         .requestMatchers("/api/v1/library/like/**").permitAll()
 
-
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

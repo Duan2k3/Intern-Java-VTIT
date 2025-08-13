@@ -24,13 +24,22 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final JwtService jwtService;
 
     /**
      * @param comment
      * @return
      */
     @Override
-    public Comment createComment(CreateCommentDTO comment) throws Exception{
+    public Comment createComment(String token ,CreateCommentDTO comment) throws Exception{
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String name = jwtService.extractUsername(token);
+        Optional<User>  user = userRepository.findByUsername(name);
+        User existingUser = user.get();
+        Long id = existingUser.getId();
+
         Optional<Post> existingPost = postRepository.findById(comment.getPostId());
         if (existingPost.isEmpty()){
             throw new DataNotFoundException("Khong tim thay bai viet");
@@ -38,15 +47,11 @@ public class CommentServiceImpl implements CommentService {
         Comment parentComment = null;
         if (comment.getParentId() != null) {
             parentComment = commentRepository.findById(comment.getParentId())
-                    .orElseThrow(() -> new DataNotFoundException("Không tìm thấy comment cha"));
+                    .orElseThrow(() -> new DataNotFoundException("Comment khong ton tai"));
 
             if (!parentComment.getPost().getId().equals(comment.getPostId())) {
                 throw new IllegalArgumentException("Không thể reply vào comment không thuộc cùng bài viết!");
             }
-        }
-        Optional<User> user = userRepository.findById(comment.getUserId());
-        if(user.isEmpty()){
-            throw new DataNotFoundException("User not existing");
         }
         Post post = existingPost.get();
         Comment comment1 = Comment.builder()
@@ -54,7 +59,7 @@ public class CommentServiceImpl implements CommentService {
                 .createdAt(LocalDate.now())
                 .post(post)
                 .parent(parentComment)
-                .userId(comment.getUserId())
+                .userId(id)
 
                 .build();
         return commentRepository.save(comment1);
@@ -80,13 +85,21 @@ public class CommentServiceImpl implements CommentService {
      * @return
      */
     @Override
-    public Comment updateComment(Long id, CommentDTO comment) throws Exception{
+    public Comment updateComment(String token ,Long id, CommentDTO comment) throws Exception{
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String name = jwtService.extractUsername(token);
+        Optional<User>  user = userRepository.findByUsername(name);
+        User existingUser = user.get();
+        Long userId = existingUser.getId();
+
         Optional<Comment> existingComment = commentRepository.findById(id);
         if (existingComment.isEmpty()){
             throw new DataNotFoundException("Cannot find Comment");
         }
         Comment updatecomment = existingComment.get();
-        if(!updatecomment.getUserId().equals(comment.getUserId())){
+        if(!updatecomment.getUserId().equals(userId)){
             throw new Exception("Cannot update comment not you");
         }
         updatecomment.setContent(comment.getContent());

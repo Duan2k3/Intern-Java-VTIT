@@ -1,11 +1,13 @@
 package com.example.book_web.service.impl;
 
+import com.example.book_web.Exception.CategoryNotFoundException;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.Category;
 import com.example.book_web.repository.BookRepository;
 import com.example.book_web.repository.CategoryRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,8 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,7 +74,36 @@ public class ExcelExporter {
         }
     }
 
-    public void ImportToExcel(MultipartFile file) throws IOException {
+public List<Integer> checkDuplicateTitlesBeforeImport(MultipartFile file) throws IOException {
+    List<Integer> duplicateRows = new ArrayList<>();
+    Set<String> existingTitles = new HashSet<>(bookRepository.findAllTitles());
+
+    InputStream inputStream = file.getInputStream();
+    Workbook workbook = new XSSFWorkbook(inputStream);
+    Sheet sheet = workbook.getSheetAt(0);
+    Iterator<Row> rowIterator = sheet.iterator();
+
+    while (rowIterator.hasNext()) {
+        Row row = rowIterator.next();
+        if (row.getRowNum() == 0) continue;
+
+        String title = getCellValue(row.getCell(1)).trim();
+        if (existingTitles.contains(title)) {
+            duplicateRows.add(row.getRowNum() + 1);
+        }
+    }
+    workbook.close();
+    inputStream.close();
+
+    return duplicateRows;
+}
+
+
+    public void importFromExcel(MultipartFile file) throws IOException {
+        List<Integer> duplicateRows = checkDuplicateTitlesBeforeImport(file);
+        if (!duplicateRows.isEmpty()) {
+            throw new IOException("Các dòng bị trùng tiêu đề: " + duplicateRows);
+        }
         InputStream inputStream = file.getInputStream();
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -84,81 +114,69 @@ public class ExcelExporter {
             if (row.getRowNum() == 0) continue;
 
             Book book = new Book();
-
-
-            book.setTitle(getCellValue(row.getCell(1)));
-
-
-            book.setAuthors(getCellValue(row.getCell(2)));
-
-
-            book.setDescription(getCellValue(row.getCell(3)));
-
-
+            book.setTitle(getCellValue(row.getCell(1)).trim());
+            book.setAuthors(getCellValue(row.getCell(2)).trim());
+            book.setDescription(getCellValue(row.getCell(3)).trim());
             Cell quantityCell = row.getCell(5);
+            int quantity = 0;
             if (quantityCell != null) {
                 switch (quantityCell.getCellType()) {
-                    case NUMERIC:
-                        book.setQuantity((int) quantityCell.getNumericCellValue());
-                        break;
-                    case STRING:
+                    case NUMERIC -> quantity = (int) quantityCell.getNumericCellValue();
+                    case STRING -> {
                         try {
-                            book.setQuantity(Integer.parseInt(quantityCell.getStringCellValue().trim()));
+                            quantity = Integer.parseInt(quantityCell.getStringCellValue().trim());
                         } catch (NumberFormatException e) {
-                            System.err.println("Invalid quantity in row " + row.getRowNum() + ": " + quantityCell.getStringCellValue());
-                            book.setQuantity(0);
+                            quantity = 0;
                         }
-                        break;
-                    case BLANK:
-                        book.setQuantity(0); // Default for blank cells
-                        break;
-                    default:
-                        System.err.println("Unexpected cell type for quantity in row " + row.getRowNum() + ": " + quantityCell.getCellType());
-                        book.setQuantity(0);
+                    }
+                    case BLANK -> quantity = 0;
                 }
-            } else {
-                System.err.println("Quantity cell missing in row " + row.getRowNum());
-                book.setQuantity(0); // Default if cell is null
+            }
+            book.setQuantity(quantity);
+
+            Cell categoriesCell = row.getCell(6);
+            if (categoriesCell != null && categoriesCell.getCellType() == CellType.STRING) {
+                String[] idStrings = categoriesCell.getStringCellValue().split(",");
+                List<Long> categoryIds = Arrays.stream(idStrings)
+                        .map(String::trim)
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+
+                List<Category> categories = categoryRepository.findAllById(categoryIds);
+                if (categories.size() != categoryIds.size()) {
+                    List<Long> foundIds = categories.stream()
+                            .map(Category::getId)
+                            .collect(Collectors.toList());
+
+                    List<Long> missingIds = categoryIds.stream()
+                            .filter(id -> !foundIds.contains(id))
+                            .collect(Collectors.toList());
+
+                    throw new CategoryNotFoundException(missingIds);
+                }
+
+                book.setCategories(categories);
             }
 
 
-        Cell categoriesCell = row.getCell(6);
-        if (categoriesCell != null && categoriesCell.getCellType() == CellType.STRING) {
-            String categoriesString = categoriesCell.getStringCellValue();
-            List<Long> categoryIds = List.of(categoriesString.split(","))
-                    .stream()
-                    .map(String::trim)
-                    .map(Long::parseLong)
-                    .collect(Collectors.toList());
-            List<Category> categories = categoryRepository.findAllById(categoryIds);
-            book.setCategories(categories);
-        }
-
-        bookRepository.save(book);
+            bookRepository.save(book);
         }
 
         workbook.close();
         inputStream.close();
     }
 
-
     private String getCellValue(Cell cell) {
         if (cell == null) return "";
-        switch (cell.getCellType()) {
-            case STRING:
-                return cell.getStringCellValue();
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue().toString();
-                } else {
-                    return String.valueOf(cell.getNumericCellValue());
-                }
-            case BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue());
-            case FORMULA:
-                return cell.getCellFormula();
-            default:
-                return "";
-        }
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue();
+            case NUMERIC -> DateUtil.isCellDateFormatted(cell)
+                    ? cell.getDateCellValue().toString()
+                    : String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+            case FORMULA -> cell.getCellFormula();
+            default -> "";
+        };
     }
+
 }

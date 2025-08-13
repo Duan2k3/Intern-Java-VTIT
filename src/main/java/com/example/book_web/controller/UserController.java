@@ -9,6 +9,7 @@ import com.example.book_web.response.*;
 import com.example.book_web.service.UserService;
 import com.example.book_web.service.impl.JwtService;
 import com.example.book_web.utils.MessageKeys;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +40,7 @@ public class UserController {
     private final UserService userService;
     private final LocalizationUtils localizationUtils;
     @GetMapping("/detail/{id}")
+    @Operation(summary = "get-user" , description = "Xem user")
     @PreAuthorize("hasAuthority('ROLE_VIEW_USER')")
     public ResponseEntity<?> getUserDetail(@PathVariable Long id) {
         try {
@@ -50,25 +53,39 @@ public class UserController {
 
     }
 
-    @PutMapping("/update/{id}")
+
+    @PutMapping("/update")
+
     @PreAuthorize("hasAuthority('ROLE_UPDATE_USER')")
-    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody UserDTO userDto) {
-        userService.updateUser(id, userDto);
-        return ResponseEntity.ok("User updated successfully!");
+    public ResponseEntity<ApiResponse> updateUser( @RequestBody UserDTO userDto) {
+        userService.updateUser( userDto);
+        return ResponseEntity.ok(ApiResponse.builder()
+                        .message(localizationUtils.getLocalizedMessage(MessageKeys.UPDATE_USER))
+                        .data(userDto)
+
+                .build());
+
     }
 
 
+
     @DeleteMapping("/delete/{id}")
+
     @PreAuthorize("hasAuthority('ROLE_DELETE_USER')")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> deleteUser(@PathVariable Long id) {
         try {
             userService.deleteUser(id);
+            return ResponseEntity.ok(ApiResponse.builder()
+                            .message(localizationUtils.getLocalizedMessage(MessageKeys.DELETE_USER))
+                    .build());
         }
         catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                            .message(e.getMessage())
+                    .build());
         }
 
-        return ResponseEntity.ok("User deleted successfully!");
+
     }
 
 
@@ -77,69 +94,57 @@ public class UserController {
     public ResponseEntity<UserListResponse> getUsersByKeyword(
             @RequestParam(defaultValue = "", required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
     ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() :
+                Sort.by(sortBy).ascending();
 
-            Pageable pageable = PageRequest.of(page, limit, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(page, limit, sort);
+        Page<User> userPage = userService.getUsersByKeyword(keyword, pageable);
 
+        List<UserResponseForKeyWord> users = userPage.getContent().stream()
+                .map(UserResponseForKeyWord::getUser)
+                .collect(Collectors.toList());
 
-            Page<User> userPage = userService.getUsersByKeyword(keyword, pageable);
+        return ResponseEntity.ok(UserListResponse.builder()
+                .users(users)
+                .currentPages(userPage.getNumber())
+                .totalPages(userPage.getTotalPages())
+                .build());
+    }
 
-
-            List<UserResponseForKeyWord> users = userPage.getContent().stream()
-                    .map(user -> UserResponseForKeyWord.getUser(user))
-                    .collect(Collectors.toList());
-
-
-            return ResponseEntity.ok(UserListResponse.builder()
-                    .users(users)
-                    .currentPages(userPage.getNumber())
-                    .totalPages(userPage.getTotalPages())
-                    .build());
-        }
 
     @PostMapping("/login")
-//    @PreAuthorize("hasAuthority('ROLE_CREATE_USER')")
-    public ResponseEntity<BaseResponse> login(@RequestBody AuthenticationRequest request) {
+    public ResponseEntity<ApiResponse> login(@RequestBody AuthenticationRequest request) throws Exception{
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-            );
-
-
-            User user = userRepository.findByUsername(request.getUsername())
-                    .orElseThrow(() -> new UsernameNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED)));
-
-
-            String token = jwtService.generateToken(user.getUsername());
-
-            return ResponseEntity.ok(BaseResponse.builder()
-                    .data(token)
-                    .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
+           String token =  userService.login(request);
+           return ResponseEntity.ok(ApiResponse.builder()
+                           .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
+                           .data(token)
+                   .build());
+        }
+        catch (Exception e ){
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                            .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED))
                     .build());
         }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(BaseResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED))
-                    .build())
-                    ;
         }
-        }
-
-
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_USER')")
-    public ResponseEntity<BaseResponse> createUser(UserDTO userDTO) throws Exception{
+    public ResponseEntity<ApiResponse> createUser(UserDTO userDTO) throws Exception{
        try {
            User user =  userService.createUser(userDTO);
-           return ResponseEntity.ok(BaseResponse.builder()
-                   .data(userDTO.getUserName())
+           return ResponseEntity.ok(ApiResponse.builder()
+                   .data(userDTO)
                    .message(localizationUtils.getLocalizedMessage(MessageKeys.REGISTER_SUCCESSFULLY))
                    .build());
        }
        catch (Exception e){
-           return ResponseEntity.ok(BaseResponse.builder()
+           return ResponseEntity.ok(ApiResponse.builder()
                            .message(e.getMessage())
                    .build());
        }

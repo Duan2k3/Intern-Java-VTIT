@@ -38,7 +38,7 @@ public class JwtService {
                         .map(GrantedAuthority::getAuthority)
                         .toList())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration * 30 * 1000L))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

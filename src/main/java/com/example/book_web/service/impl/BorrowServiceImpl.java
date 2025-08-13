@@ -3,6 +3,7 @@ package com.example.book_web.service.impl;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.dto.BorrowDTO;
 import com.example.book_web.dto.BorrowDetailDTO;
+import com.example.book_web.dto.BorrowHistoryDTO;
 import com.example.book_web.dto.ReturnBookDTO;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.Borrow;
@@ -13,10 +14,13 @@ import com.example.book_web.repository.BookRepository;
 import com.example.book_web.repository.BorrowDetailRepository;
 import com.example.book_web.repository.BorrowRepository;
 import com.example.book_web.repository.UserRepository;
+import com.example.book_web.response.ReturnBookRequest;
 import com.example.book_web.service.BorrowService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,16 +35,25 @@ public class BorrowServiceImpl implements BorrowService {
     private final BorrowRepository borrowRepository;
     private final BorrowDetailRepository borrowDetailRepository;
     private final BookRepository bookRepository;
+    private final JwtService jwtService;
 
+    @Transactional
     @Override
-    public Borrow createBorrow(BorrowDTO borrowDTO) throws Exception {
-        User user = userRepository.findById(borrowDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public Borrow createBorrow(String token , BorrowDTO borrowDTO) throws Exception {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String name = jwtService.extractUsername(token);
+        Optional<User>  user = userRepository.findByUsername(name);
+        User existingUser = user.get();
+        Long id = existingUser.getId();
+//        User user = userRepository.findById(borrowDTO.getUserId())
+//                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Borrow borrow = Borrow.builder()
                 .borrowDate(LocalDate.now())
                 .returnDate(borrowDTO.getReturnDate())
-                .user(user)
+                .user(existingUser)
 
                 .build();
 
@@ -48,6 +61,13 @@ public class BorrowServiceImpl implements BorrowService {
         for (BorrowDetailDTO d : borrowDTO.getBorrowDetails()) {
             Book book = bookRepository.findById(d.getBookId())
                     .orElseThrow(() -> new RuntimeException("Book not found"));
+
+            if(book.getQuantity() < d.getQuantity()){
+                throw  new DataNotFoundException("Số lượng sách không đủ");
+            }
+            else {
+                book.setQuantity(book.getQuantity()-d.getQuantity());
+            }
             BorrowDetail detail = BorrowDetail.builder()
                     .book(book)
                     .quantity(d.getQuantity())
@@ -64,7 +84,7 @@ public class BorrowServiceImpl implements BorrowService {
 
 
     @Override
-    public Borrow updateBorrow(Long id, ReturnBookDTO bookDTO) throws Exception {
+    public Borrow updateBorrow(ReturnBookDTO bookDTO) throws Exception {
         List<BorrowDetail> details = borrowDetailRepository.findByBorrowIdIn(bookDTO.getBorrowDetailIds());
 
         if (details.isEmpty()) {
@@ -92,11 +112,11 @@ public class BorrowServiceImpl implements BorrowService {
             }
         }
         borrowDetailRepository.saveAll(details);
-        Optional<Borrow> borrowOptional = borrowRepository.findById(id);
+        Optional<Borrow> borrowOptional = borrowRepository.findById(bookDTO.getId());
         if (borrowOptional.isPresent()) {
             return borrowOptional.get();
         } else {
-            throw new RuntimeException("Borrow not found with id: " + id);
+            throw new RuntimeException("Borrow not found with id: " + bookDTO.getId());
         }
     }
 
@@ -143,6 +163,69 @@ public class BorrowServiceImpl implements BorrowService {
         borrowRepository.delete(borrow);
     }
 
+    @Override
+    public List<BorrowDetail> getBorrowHistory1(String token){
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String name = jwtService.extractUsername(token);
+       Optional<User>  user = userRepository.findByUsername(name);
+       User existingUser = user.get();
+       Long id = existingUser.getId();
+
+
+       List<BorrowDetail> list = borrowDetailRepository.getBorrowHistory(id);
+
+       return list;
+
+
+
     }
+
+    /**
+     * @param request
+     */
+    @Override
+    public void returnBook(String token ,ReturnBookRequest request) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String name = jwtService.extractUsername(token);
+        Optional<User>  user = userRepository.findByUsername(name);
+        User existingUser = user.get();
+        Long id = existingUser.getId();
+
+        Borrow borrow = borrowRepository.findById(request.getBorrowId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu mượn"));
+
+        for (Long bookId : request.getBookIds()) {
+            BorrowDetail detail = borrowDetailRepository.findByBorrowIdAndBookId(borrow.getId(), bookId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết mượn sách"));
+
+            if (detail.getStatus() == BorrowStatus.RETURNED || detail.getStatus() == BorrowStatus.LATE_RETURN) {
+                throw new RuntimeException("Sách đã được trả rồi");
+            }
+
+            Optional<Book> book = bookRepository.findById(bookId);
+            if (book.isEmpty()) {
+                throw new RuntimeException("Book not existing");
+            }
+            Book existingBook = book.get();
+            existingBook.setQuantity(existingBook.getQuantity() + detail.getQuantity());
+
+            detail.setActualReturnedDate(LocalDate.now());
+
+            if (detail.getActualReturnedDate().isAfter(borrow.getReturnDate())) {
+                detail.setStatus(BorrowStatus.LATE_RETURN);
+            } else {
+                detail.setStatus(BorrowStatus.RETURNED);
+            }
+
+            borrowDetailRepository.save(detail);
+        }
+    }
+
+
+}
 
 

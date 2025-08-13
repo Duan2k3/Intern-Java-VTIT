@@ -7,6 +7,7 @@ import com.example.book_web.entity.Category;
 import com.example.book_web.entity.User;
 import com.example.book_web.repository.BookRepository;
 import com.example.book_web.repository.CategoryRepository;
+import com.example.book_web.response.BookResponse;
 import com.example.book_web.service.BookService;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,15 +19,22 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -73,15 +81,15 @@ public class BookServiceImpl implements BookService{
     }
 
     /**
-     * @param id
+
      * @param bookDTO
      * @return
      * @throws Exception
      */
     @Override
     @Transactional
-    public Book updateBook(Long id, BookDTO bookDTO) throws Exception {
-        Optional<Book> existing = bookRepository.findById(id);
+    public Book updateBook(BookDTO bookDTO) throws Exception {
+        Optional<Book> existing = bookRepository.findById(bookDTO.getId());
         if(existing.isEmpty()){
             throw new Exception("Book not existing");
 
@@ -121,12 +129,22 @@ public class BookServiceImpl implements BookService{
     }
 
     /**
+     * @param keyword
+
+     * @param pageRequest
      * @return
      */
     @Override
-    public List<Book> getAllBook() {
-        return bookRepository.findAll();
+    public Page<BookResponse> getAllBook(String keyword,  PageRequest pageRequest) {
+        Page<Book> productsPage;
+        productsPage = bookRepository.findByKeyWord(keyword, pageRequest);
+        return productsPage.map(BookResponse::getBook);
     }
+
+    /**
+     * @return
+     */
+
 
 
 
@@ -156,4 +174,34 @@ public class BookServiceImpl implements BookService{
 
         }
     }
+
+
+    public String storeBookImage(Long bookId, MultipartFile file) throws Exception {
+        Optional<Book> optionalBook = bookRepository.findById(bookId);
+        if (optionalBook.isEmpty()) {
+            throw new DataNotFoundException("Không tìm thấy sách với ID: " + bookId);
+        }
+
+        if (file.isEmpty() || !file.getContentType().startsWith("image/")) {
+            throw new IOException("File không hợp lệ");
+        }
+
+
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Path uploadPath = Paths.get("uploads");
+
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+
+
+        Book book = optionalBook.get();
+        book.setImage(fileName);
+        bookRepository.save(book);
+
+        return fileName;
+    }
+
 }

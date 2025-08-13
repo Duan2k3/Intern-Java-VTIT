@@ -41,8 +41,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category updateCategory(Long id, CategoryDTO categoryDTO) throws Exception {
-        Optional<Category> category = categoryRepository.findById(id);
+    public Category updateCategory(CategoryDTO categoryDTO) throws Exception {
+        Optional<Category> category = categoryRepository.findById(categoryDTO.getId());
 
 
         if(category.isEmpty()){

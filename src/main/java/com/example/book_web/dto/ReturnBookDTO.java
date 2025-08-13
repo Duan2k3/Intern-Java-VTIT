@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ReturnBookDTO {
+    private Long id;
     private LocalDate actualReturnedDate;
     private List<Long> borrowDetailIds;
 }

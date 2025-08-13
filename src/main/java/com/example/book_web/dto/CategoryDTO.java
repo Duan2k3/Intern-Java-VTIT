@@ -12,6 +12,8 @@ import lombok.*;
 @Builder
 
 public class CategoryDTO {
+    @JsonProperty("id")
+    private Long id;
     @JsonProperty("name")
     private String name;
 }

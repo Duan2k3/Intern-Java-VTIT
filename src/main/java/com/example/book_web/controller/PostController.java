@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
     @PostMapping("/create")
+    @Transactional
     @PreAuthorize("hasAuthority('ROLE_CREATE_POST')")
     public ResponseEntity<?> createPost(@RequestBody PostDTO postDTO) throws Exception{
         try {
@@ -32,6 +34,7 @@ public class PostController {
 
     }
     @PutMapping("/update/{id}")
+    @Transactional
     @PreAuthorize("hasAuthority('ROLE_UPDATE_POST')")
     public ResponseEntity<?> updatePost( @PathVariable Long id ,@RequestBody PostDTO postDTO) throws Exception{
         try {
@@ -57,10 +60,10 @@ public class PostController {
         List<PostResponse> pendingPosts = postService.getPublicPosts();
         return ResponseEntity.ok(pendingPosts);
 
-
     }
 
     @PutMapping("/approve/{id}")
+    @Transactional
     @PreAuthorize("hasAuthority('ROLE_UPDATE_POST')")
     public ResponseEntity<?> approvePost(@PathVariable Long id) throws Exception{
 

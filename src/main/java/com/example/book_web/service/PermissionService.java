@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PermissionService {
     Permission createPermission(PermissionDTO permissionDTO) throws Exception;
-    Permission updatePermission(Long id , PermissionDTO permissionDTO) throws Exception;
+    Permission updatePermission( PermissionDTO permissionDTO) throws Exception;
     void deletePermission(Long id);
     List<PermissionDTO> getAllPermission();
     List<String> getDetailPermission(Long id) throws Exception;

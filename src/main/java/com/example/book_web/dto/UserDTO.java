@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 
@@ -20,9 +21,14 @@ import java.util.Date;
 
 public class UserDTO {
 
+    private Long id;
+
     @JsonProperty("user_name")
     private String userName;
 
+    @JsonProperty("email")
+    @Pattern(regexp = "^[A-Za-z0-9._%+-]+@gmail\\.com$", message = "Chỉ chấp nhận email Gmail")
+    private String email;
 
 
     @JsonProperty("password")

@@ -3,12 +3,14 @@ package com.example.book_web.controller;
 import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.CategoryDTO;
 import com.example.book_web.entity.Category;
+import com.example.book_web.response.ApiResponse;
 import com.example.book_web.response.BaseResponse;
 import com.example.book_web.service.CategoryService;
 import com.example.book_web.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -24,58 +26,72 @@ public class CategoryController {
     private final LocalizationUtils localizationUtils;
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_VIEW_CATEGORY')")
-    public ResponseEntity<?> getAllCategory() throws Exception{
+    public ResponseEntity<ApiResponse> getAllCategory() throws Exception{
         try {
             List<Category> categories = categoryService.getAllCategories();
-            return ResponseEntity.ok(categories);
+            return ResponseEntity.ok(ApiResponse.builder()
+                            .message(localizationUtils.getLocalizedMessage(MessageKeys.DATA_EXISTING))
+                            .code(200)
+                            .data(categories)
+                    .build());
 
         }catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                            .message("Load field")
+
+
+                    .build());
         }
     }
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_CATEGORY')")
-    public ResponseEntity<BaseResponse> createCategory(@RequestBody CategoryDTO categoryDTO){
+    public ResponseEntity<ApiResponse> createCategory(@RequestBody CategoryDTO categoryDTO){
         try {
             Category category = categoryService.createCategory(categoryDTO);
             return ResponseEntity.ok(
-                    BaseResponse.builder()
+                    ApiResponse.builder()
                             .message(localizationUtils.getLocalizedMessage(MessageKeys.INSERT_CATEGORY_SUCCESSFULLY))
                             .build()
             );
         }
         catch (Exception e){
-            return ResponseEntity.badRequest().body(BaseResponse.builder()
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
                             .message(e.getMessage())
                     .build());
         }
     }
-    @PutMapping("/update/{id}")
+    @PutMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_CATEGORY')")
-    public ResponseEntity<BaseResponse> updateCategory(@PathVariable Long id,  @RequestBody CategoryDTO categoryDTO){
+    public ResponseEntity<ApiResponse> updateCategory( @RequestBody CategoryDTO categoryDTO){
         try {
-            Category category = categoryService.updateCategory(id,categoryDTO);
-            return ResponseEntity.ok(BaseResponse.builder()
+            Category category = categoryService.updateCategory(categoryDTO);
+            return ResponseEntity.ok(ApiResponse.builder()
                             .message(localizationUtils.getLocalizedMessage(MessageKeys.UPDATE_CATEGORY_SUCCESSFULLY))
+                            .data(category)
                     .build());
         }
         catch (Exception e){
-            return ResponseEntity.badRequest().body(BaseResponse.builder()
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
                             .message(localizationUtils.getLocalizedMessage(MessageKeys.UPDATE_CATEGORY_SUCCESSFULLY))
                     .build());
         }
     }
 
     @DeleteMapping("/delete/{id}")
+    @Transactional
     @PreAuthorize("hasAuthority('ROLE_DELETE_CATEGORY')")
-    public ResponseEntity<?>deleteCategory(@PathVariable Long id) throws Exception{
+    public ResponseEntity<ApiResponse>deleteCategory(@PathVariable Long id) throws Exception{
         try {
             categoryService.deleteCategory(id);
-            return ResponseEntity.ok("Delete category successfully");
+            return ResponseEntity.ok(ApiResponse.builder()
+                            .message(localizationUtils.getLocalizedMessage(MessageKeys.DELETE_CATEGORY_SUCCESSFULLY))
+                    .build());
         }
         catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                            .message(e.getMessage())
+                    .build());
         }
     }
 

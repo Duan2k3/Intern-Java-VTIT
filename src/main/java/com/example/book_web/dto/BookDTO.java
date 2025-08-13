@@ -13,8 +13,15 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class BookDTO {
+
+    @JsonProperty("id")
+    private Long id;
+
     @JsonProperty("title")
     private String title;
+
+    @JsonProperty("image")
+    private String image;
 
     @JsonProperty("author")
     private String authors;
