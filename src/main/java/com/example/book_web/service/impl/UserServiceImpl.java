@@ -1,6 +1,8 @@
 package com.example.book_web.service.impl;
 
+import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
+import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.UserDTO;
 import com.example.book_web.entity.Role;
@@ -15,6 +17,7 @@ import com.example.book_web.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -73,20 +76,19 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponse userDetail(Long id) {
-        try {
+
            Optional<UserResponse> user = userRepository.findUserById(id);
+           if (user.isEmpty()){
+             throw new DataNotFoundException("Khong tim thay user","400");
+           }
             return user.get();
-        }
-        catch (Exception e){
-            throw new RuntimeException("Lỗi khi lấy thông tin user: " + e.getMessage());
-        }
 
     }
 
     @Override
     public User createUser(UserDTO dto) {
         if (userRepository.existsByUsername(dto.getUserName())) {
-            throw new RuntimeException("Tên người dùng đã tồn tại");
+            throw new DataExistingException("Tên người dùng đã tồn tại","400");
         }
         Role userRole = roleRepository.findByName("USER");
         User user = User.builder()

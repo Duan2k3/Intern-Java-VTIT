@@ -6,8 +6,8 @@ import com.example.book_web.entity.Permission;
 import java.util.List;
 
 public interface PermissionService {
-    Permission createPermission(PermissionDTO permissionDTO) throws Exception;
-    Permission updatePermission( PermissionDTO permissionDTO) throws Exception;
+    Permission createPermission(PermissionDTO permissionDTO) ;
+    Permission updatePermission( PermissionDTO permissionDTO) ;
     void deletePermission(Long id);
     List<PermissionDTO> getAllPermission();
     List<String> getDetailPermission(Long id) throws Exception;

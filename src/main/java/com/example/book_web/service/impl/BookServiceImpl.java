@@ -51,16 +51,16 @@ public class BookServiceImpl implements BookService{
      */
     @Override
     @Transactional
-    public Book createBook(BookDTO bookDTO) throws Exception {
+    public Book createBook(BookDTO bookDTO)  {
         Optional<Book> existing = bookRepository.findBookByTitle(bookDTO.getTitle());
         if (existing.isPresent()) {
-            throw new DataNotFoundException("Book already exists");
+            throw new DataNotFoundException("Book exist","200");
         }
         List<Category> categories = new ArrayList<>();
         for (Long categoryId : bookDTO.getCategoriesIds()) {
             Optional<Category> existingCategory = categoryRepository.findById(categoryId);
             if (existingCategory.isEmpty()) {
-                throw new DataNotFoundException("Category with ID " + categoryId + " not found.");
+                throw new DataNotFoundException("Category with ID " + categoryId + " not found.","200");
             }
             categories.add(existingCategory.get());
         }
@@ -88,10 +88,10 @@ public class BookServiceImpl implements BookService{
      */
     @Override
     @Transactional
-    public Book updateBook(BookDTO bookDTO) throws Exception {
+    public Book updateBook(BookDTO bookDTO)  {
         Optional<Book> existing = bookRepository.findById(bookDTO.getId());
         if(existing.isEmpty()){
-            throw new Exception("Book not existing");
+            throw new DataNotFoundException("Book not existing","400");
 
         }
         Book book = existing.get();
@@ -102,7 +102,7 @@ public class BookServiceImpl implements BookService{
         for(Long categoryId : bookDTO.getCategoriesIds()){
             Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
             if(optionalCategory.isEmpty()){
-                throw new DataNotFoundException("Category with ID \" + categoryId + \" not found.\"");
+                throw new DataNotFoundException("Category with ID \" + categoryId + \" not found.\"","400");
             }
             categories.add(optionalCategory.get());
         }
@@ -118,11 +118,11 @@ public class BookServiceImpl implements BookService{
      */
     @Override
     @Transactional
-    public void deleteBook(Long id) throws DataNotFoundException{
+    public void deleteBook(Long id) {
 
         Optional<Book> existing = bookRepository.findById(id);
         if(existing.isEmpty()){
-            throw new DataNotFoundException("User not existing");
+            throw new DataNotFoundException("User not existing","400");
         }
 
          bookRepository.deleteById(id);
@@ -176,10 +176,10 @@ public class BookServiceImpl implements BookService{
     }
 
 
-    public String storeBookImage(Long bookId, MultipartFile file) throws Exception {
+    public String storeBookImage(Long bookId, MultipartFile file) throws Exception{
         Optional<Book> optionalBook = bookRepository.findById(bookId);
         if (optionalBook.isEmpty()) {
-            throw new DataNotFoundException("Không tìm thấy sách với ID: " + bookId);
+            throw new DataNotFoundException("Không tìm thấy sách với ID: " + bookId,"400");
         }
 
         if (file.isEmpty() || !file.getContentType().startsWith("image/")) {

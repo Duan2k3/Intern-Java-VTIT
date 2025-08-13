@@ -1,5 +1,6 @@
 package com.example.book_web.service.impl;
 
+import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.dto.CategoryDTO;
 import com.example.book_web.entity.Book;
@@ -27,10 +28,10 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
-    public Category createCategory(CategoryDTO categoryDTO) throws Exception {
+    public Category createCategory(CategoryDTO categoryDTO) {
         Optional<Category> existingCategory = categoryRepository.findCategoryByName(categoryDTO.getName());
         if(!existingCategory.isEmpty()){
-            throw new Exception("Category da ton tai ");
+            throw new DataExistingException("Category da ton tai ","400");
         }
         Category category = Category.builder()
                 .name(categoryDTO.getName())
@@ -41,16 +42,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category updateCategory(CategoryDTO categoryDTO) throws Exception {
+    public Category updateCategory(CategoryDTO categoryDTO)  {
         Optional<Category> category = categoryRepository.findById(categoryDTO.getId());
 
 
         if(category.isEmpty()){
-            throw new DataNotFoundException("Category not existing");
+            throw new DataNotFoundException("Category not existing","400");
         }
         Optional<Category> optionalCategory = categoryRepository.findCategoryByName(categoryDTO.getName());
         if(!optionalCategory.isEmpty()){
-            throw new Exception("Category has existing");
+            throw new DataExistingException("Category has existing","400");
         }
 
         Category existingCategory = category.get();
@@ -62,7 +63,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Long id) throws Exception {
        Optional<Category> category = categoryRepository.findById(id);
        if(category.isEmpty()){
-           throw new Exception("Category not existing");
+           throw new DataNotFoundException("Category not existing","400");
        }
          categoryRepository.deleteById(id);
     }
@@ -73,10 +74,10 @@ public class CategoryServiceImpl implements CategoryService {
      * @throws Exception
      */
     @Override
-    public List<String> getCategoryDetail(Long id) throws Exception {
+    public List<String> getCategoryDetail(Long id)  {
         Optional<Category> existing = categoryRepository.findById(id);
         if(existing.isEmpty()){
-            throw new Exception("Category not existing");
+            throw new DataNotFoundException("Category not existing","400");
         }
         Category category = existing.get();
 

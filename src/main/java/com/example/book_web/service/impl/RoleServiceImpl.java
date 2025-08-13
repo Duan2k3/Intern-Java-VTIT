@@ -39,14 +39,14 @@ public class RoleServiceImpl implements RoleService {
      */
     @Override
     @Transactional
-    public Role createRole(RoleDTO roleCreateRequest) throws Exception {
+    public Role createRole(RoleDTO roleCreateRequest) {
         Role role = roleCreateRequest.getRole();
         roleRepository.save(role);
         List<User> users = new ArrayList<>();
         for (Long userId : roleCreateRequest.getUserIds()) {
             Optional<User> existingUser = userRepository.findById(userId);
             if (existingUser.isEmpty()) {
-                throw new DataNotFoundException("User with ID " + userId + " not found.");
+                throw new DataNotFoundException("User with ID " + userId + " not found.","400");
             }
             users.add(existingUser.get());
         }
@@ -54,7 +54,7 @@ public class RoleServiceImpl implements RoleService {
         for (Long permissionId : roleCreateRequest.getPermissionIds()) {
             Optional<Permission> existingPermission = permissionRepository.findById(permissionId);
             if (existingPermission.isEmpty()) {
-                throw new DataNotFoundException("Permission with ID " + permissionId + " not found.");
+                throw new DataNotFoundException("Permission with ID " + permissionId + " not found.","400");
             }
             permissions.add(existingPermission.get());
         }
@@ -77,9 +77,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public Role updateRole(Long id, RoleDTO role) throws Exception{
+    public Role updateRole(Long id, RoleDTO role){
         Role existingRole = roleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+                .orElseThrow(() -> new DataNotFoundException("Role not found with id: " + id,"400"));
 
 
         if (role.getRole().getName() != null && !role.getRole().getName().trim().isEmpty()) {
@@ -94,7 +94,7 @@ public class RoleServiceImpl implements RoleService {
         for (Long userId : role.getUserIds()) {
             Optional<User> existingUser = userRepository.findById(userId);
             if (existingUser.isEmpty()) {
-                throw new DataNotFoundException("User with ID " + userId + " not found.");
+                throw new DataNotFoundException("User with ID " + userId + " not found.","400");
             }
             users.add(existingUser.get());
         }
@@ -102,7 +102,7 @@ public class RoleServiceImpl implements RoleService {
         for (Long permissionId : role.getPermissionIds()) {
             Optional<Permission> existingPermission = permissionRepository.findById(permissionId);
             if (existingPermission.isEmpty()) {
-                throw new DataNotFoundException("Permission with ID " + permissionId + " not found.");
+                throw new DataNotFoundException("Permission with ID " + permissionId + " not found.","400");
             }
             permissions.add(existingPermission.get());
         }
@@ -119,7 +119,7 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void deleteRole(Long id) {
         if (!roleRepository.existsById(id)) {
-            throw new RuntimeException("Role not found with id: " + id);
+            throw new DataNotFoundException("Role not found with id: " + id,"400");
         }
         roleRepository.deleteById(id);
     }

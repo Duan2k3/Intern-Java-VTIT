@@ -1,9 +1,8 @@
 package com.example.book_web.Exception;
 
-public class DataNotFoundException extends RuntimeException{
-
+public class AccessDeniedHandleException extends RuntimeException{
     private  final  String code;
-    public DataNotFoundException(String message,String code) {
+    public AccessDeniedHandleException(String message, String code) {
         super(message);
         this.code = code;
     }
@@ -12,4 +11,3 @@ public class DataNotFoundException extends RuntimeException{
         return code;
     }
 }
-

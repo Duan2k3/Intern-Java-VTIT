@@ -13,13 +13,13 @@ import java.util.List;
 
 @Service
 public interface BorrowService {
-    Borrow createBorrow(String token ,BorrowDTO borrowDTO) throws Exception;
-    Borrow updateBorrow( ReturnBookDTO bookDTO) throws Exception;
+    Borrow createBorrow(String token ,BorrowDTO borrowDTO);
+    Borrow updateBorrow( ReturnBookDTO bookDTO) ;
 
 
     List<Borrow> getAllBorrows();
-    Borrow getBorrow(Long id) throws Exception;
-    void deleteBorrow(Long id) throws Exception;
+    Borrow getBorrow(Long id) ;
+    void deleteBorrow(Long id) ;
 //    List<BorrowDetail> getBorrowHistory(Long userId);
     List<BorrowDetail> getBorrowHistory1(String token);
 

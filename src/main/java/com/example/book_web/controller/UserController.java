@@ -1,5 +1,6 @@
 package com.example.book_web.controller;
 
+import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.LoginDTO;
 import com.example.book_web.dto.UserDTO;
@@ -43,13 +44,10 @@ public class UserController {
     @Operation(summary = "get-user" , description = "Xem user")
     @PreAuthorize("hasAuthority('ROLE_VIEW_USER')")
     public ResponseEntity<?> getUserDetail(@PathVariable Long id) {
-        try {
             UserResponse user = userService.userDetail(id) ;
-            return ResponseEntity.ok(user);
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+            return ResponseConfig.success(user);
+
+
 
     }
 

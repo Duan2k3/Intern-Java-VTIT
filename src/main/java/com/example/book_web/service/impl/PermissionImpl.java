@@ -1,5 +1,6 @@
 package com.example.book_web.service.impl;
 
+import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.dto.PermissionDTO;
 import com.example.book_web.entity.Permission;
@@ -28,10 +29,10 @@ public class PermissionImpl implements PermissionService {
      * @throws Exception
      */
     @Override
-    public Permission createPermission(PermissionDTO permissionDTO) throws Exception {
+    public Permission createPermission(PermissionDTO permissionDTO)  {
         Optional<Permission> existingPermission = permissionRepository.findByName(permissionDTO.getName());
         if (existingPermission.isPresent()) {
-            throw new Exception("Permission existing");
+            throw new DataExistingException("Permission existing","400");
         }
         Permission permission = Permission.builder()
                 .name(permissionDTO.getName())
@@ -42,19 +43,19 @@ public class PermissionImpl implements PermissionService {
     }
 
     /**
-     * @param id
+
      * @param permissionDTO
      * @return
      */
     @Override
-    public Permission updatePermission( PermissionDTO permissionDTO) throws  Exception {
+    public Permission updatePermission( PermissionDTO permissionDTO){
         Optional<Permission> existingPermission = permissionRepository.findById(permissionDTO.getId());
         if(existingPermission.isEmpty()){
-            throw new DataNotFoundException("Permission khong ton tai");
+            throw new DataNotFoundException("Permission khong ton tai","400");
         }
          Optional<Permission> findpermission = permissionRepository.findByName(permissionDTO.getName());
         if(findpermission.isPresent()){
-            throw new Exception(("Permission da ton tai"));
+            throw new DataNotFoundException("Permission da ton tai","400");
         }
         Permission permission = existingPermission.get();
 
@@ -87,10 +88,10 @@ public class PermissionImpl implements PermissionService {
      * @return
      */
     @Override
-    public List<String> getDetailPermission(Long id) throws Exception {
+    public List<String> getDetailPermission(Long id) {
         Optional<User> existingUser = userRepository.findById(id);
         if (existingUser.isEmpty()) {
-            throw new DataNotFoundException("User not existing");
+            throw new DataNotFoundException("User not existing","400");
         }
         User user = existingUser.get();
 

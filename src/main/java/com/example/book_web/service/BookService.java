@@ -13,10 +13,10 @@ import java.io.IOException;
 import java.util.List;
 
 public interface BookService {
-    Book createBook(BookDTO bookDTO) throws Exception;
+    Book createBook(BookDTO bookDTO) ;
 
-    Book updateBook( BookDTO bookDTO) throws Exception;
-    void deleteBook(Long id) throws Exception;
+    Book updateBook( BookDTO bookDTO) ;
+    void deleteBook(Long id) ;
     Page<BookResponse> getAllBook(String keyword  , PageRequest pageRequest);
     void generateExcel(HttpServletResponse servletResponse) throws IOException;
 

@@ -24,14 +24,14 @@ public class UserLikePostImpl implements UserLikePostService {
 
     @Override
     @Transactional
-    public boolean toggleLikePost(Long userId, Long postId) throws Exception {
+    public boolean toggleLikePost(Long userId, Long postId) {
         if (likeRepo.existsByUserIdAndPostId(userId, postId)) {
             likeRepo.deleteByUserIdAndPostId(userId, postId);
             return false;
         } else {
 
             Post post = postRepository.findById(postId)
-                    .orElseThrow(() -> new RuntimeException("Post not found"));
+                    .orElseThrow(() -> new DataNotFoundException("Post not found","400"));
 
             UserLikePost like = new UserLikePost();
             like.setUserId(userId);

@@ -39,7 +39,7 @@ public class BorrowServiceImpl implements BorrowService {
 
     @Transactional
     @Override
-    public Borrow createBorrow(String token , BorrowDTO borrowDTO) throws Exception {
+    public Borrow createBorrow(String token , BorrowDTO borrowDTO)  {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -63,7 +63,7 @@ public class BorrowServiceImpl implements BorrowService {
                     .orElseThrow(() -> new RuntimeException("Book not found"));
 
             if(book.getQuantity() < d.getQuantity()){
-                throw  new DataNotFoundException("Số lượng sách không đủ");
+                throw  new DataNotFoundException("Số lượng sách không đủ","400");
             }
             else {
                 book.setQuantity(book.getQuantity()-d.getQuantity());
@@ -84,7 +84,7 @@ public class BorrowServiceImpl implements BorrowService {
 
 
     @Override
-    public Borrow updateBorrow(ReturnBookDTO bookDTO) throws Exception {
+    public Borrow updateBorrow(ReturnBookDTO bookDTO)  {
         List<BorrowDetail> details = borrowDetailRepository.findByBorrowIdIn(bookDTO.getBorrowDetailIds());
 
         if (details.isEmpty()) {
@@ -147,7 +147,7 @@ public class BorrowServiceImpl implements BorrowService {
      * @throws Exception
      */
     @Override
-    public Borrow getBorrow(Long id) throws Exception {
+    public Borrow getBorrow(Long id) {
         return borrowRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Borrow not found"));
     }
@@ -157,7 +157,7 @@ public class BorrowServiceImpl implements BorrowService {
      * @throws Exception
      */
     @Override
-    public void deleteBorrow(Long id) throws Exception {
+    public void deleteBorrow(Long id) {
         Borrow borrow = borrowRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Borrow not found"));
         borrowRepository.delete(borrow);

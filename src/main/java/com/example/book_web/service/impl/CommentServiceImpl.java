@@ -1,5 +1,6 @@
 package com.example.book_web.service.impl;
 
+import com.example.book_web.Exception.AccessDeniedHandleException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.dto.CommentDTO;
 import com.example.book_web.dto.CreateCommentDTO;
@@ -31,7 +32,7 @@ public class CommentServiceImpl implements CommentService {
      * @return
      */
     @Override
-    public Comment createComment(String token ,CreateCommentDTO comment) throws Exception{
+    public Comment createComment(String token ,CreateCommentDTO comment) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -42,12 +43,12 @@ public class CommentServiceImpl implements CommentService {
 
         Optional<Post> existingPost = postRepository.findById(comment.getPostId());
         if (existingPost.isEmpty()){
-            throw new DataNotFoundException("Khong tim thay bai viet");
+            throw new DataNotFoundException("Khong tim thay bai viet","400");
         }
         Comment parentComment = null;
         if (comment.getParentId() != null) {
             parentComment = commentRepository.findById(comment.getParentId())
-                    .orElseThrow(() -> new DataNotFoundException("Comment khong ton tai"));
+                    .orElseThrow(() -> new DataNotFoundException("Comment khong ton tai","400"));
 
             if (!parentComment.getPost().getId().equals(comment.getPostId())) {
                 throw new IllegalArgumentException("Không thể reply vào comment không thuộc cùng bài viết!");
@@ -70,10 +71,10 @@ public class CommentServiceImpl implements CommentService {
      * @return
      */
     @Override
-    public Comment getCommentById(Long id) throws Exception {
+    public Comment getCommentById(Long id)  {
        Optional<Comment> comment = commentRepository.findById(id);
        if(comment.isEmpty()){
-           throw new DataNotFoundException("Cannot find comment");
+           throw new DataNotFoundException("Cannot find comment","400");
        }
        Comment existingComment = comment.get();
        return existingComment;
@@ -85,7 +86,7 @@ public class CommentServiceImpl implements CommentService {
      * @return
      */
     @Override
-    public Comment updateComment(String token ,Long id, CommentDTO comment) throws Exception{
+    public Comment updateComment(String token ,Long id, CommentDTO comment) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -96,11 +97,11 @@ public class CommentServiceImpl implements CommentService {
 
         Optional<Comment> existingComment = commentRepository.findById(id);
         if (existingComment.isEmpty()){
-            throw new DataNotFoundException("Cannot find Comment");
+            throw new DataNotFoundException("Cannot find Comment","400");
         }
         Comment updatecomment = existingComment.get();
         if(!updatecomment.getUserId().equals(userId)){
-            throw new Exception("Cannot update comment not you");
+            throw new AccessDeniedHandleException("Cannot update comment not you","400");
         }
         updatecomment.setContent(comment.getContent());
         updatecomment.setUpdatedAt(LocalDate.now());

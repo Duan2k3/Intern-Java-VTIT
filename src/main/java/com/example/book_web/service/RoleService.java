@@ -11,8 +11,8 @@ import java.util.List;
 
 public interface RoleService {
     List<RoleResponse> getAllRoles();
-    Role createRole(RoleDTO roleDTO) throws Exception;
+    Role createRole(RoleDTO roleDTO) ;
     RoleDetailResponse getRoleDetail(Long id);
-    Role updateRole(Long id, RoleDTO roleDTO) throws Exception;
+    Role updateRole(Long id, RoleDTO roleDTO) ;
     void deleteRole(Long id);
 }

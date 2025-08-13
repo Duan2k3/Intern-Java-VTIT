@@ -16,12 +16,12 @@ public interface UserService {
     String login(AuthenticationRequest request) throws Exception;
 
      List<UserResponse> getAllUsers();
-     UserResponse userDetail(Long id) throws Exception;
+     UserResponse userDetail(Long id) ;
      User createUser(UserDTO userDTO);
 
      User updateUser( UserDTO userDTO);
 
-    void deleteUser(Long id) throws DataNotFoundException;
+    void deleteUser(Long id) ;
 
     Page<User> getUsersByKeyword(String keyword, Pageable pageable);
 }

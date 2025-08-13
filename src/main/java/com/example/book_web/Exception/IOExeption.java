@@ -1,9 +1,10 @@
 package com.example.book_web.Exception;
 
-public class DataNotFoundException extends RuntimeException{
+import java.io.IOException;
 
+public class IOExeption extends IOException {
     private  final  String code;
-    public DataNotFoundException(String message,String code) {
+    public IOExeption(String message,String code) {
         super(message);
         this.code = code;
     }
@@ -12,4 +13,3 @@ public class DataNotFoundException extends RuntimeException{
         return code;
     }
 }
-

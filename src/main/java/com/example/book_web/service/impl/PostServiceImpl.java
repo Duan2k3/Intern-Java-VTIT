@@ -1,7 +1,7 @@
 package com.example.book_web.service.impl;
 
+import com.example.book_web.Exception.AccessDeniedHandleException;
 import com.example.book_web.Exception.DataNotFoundException;
-import com.example.book_web.dto.CommentDTO;
 import com.example.book_web.dto.PostDTO;
 import com.example.book_web.entity.Comment;
 import com.example.book_web.entity.Post;
@@ -33,10 +33,10 @@ public class PostServiceImpl implements PostService {
      * @throws Exception
      */
     @Override
-    public Post createPost(PostDTO postDTO) throws Exception {
+    public Post createPost(PostDTO postDTO)  {
         Optional<User> existingUser = userRepository.findById(postDTO.getUser());
         if (existingUser.isEmpty()){
-            throw new  DataNotFoundException("User not existing");
+            throw new  DataNotFoundException("User not existing","400");
         }
         User user = existingUser.get();
         Post post = Post.builder()
@@ -55,19 +55,19 @@ public class PostServiceImpl implements PostService {
      * @return
      */
     @Override
-    public Post updatePost(Long id, PostDTO postDTO) throws Exception {
+    public Post updatePost(Long id, PostDTO postDTO){
 
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Post not found"));
+        Optional<Post> post = postRepository.findById(id);
 
-        if (!post.getUser().getId().equals(postDTO.getUser()) ) {
-            throw new AccessDeniedException("Bạn không có quyền sửa bài này");
+        if (!post.get().getUser().getId().equals(postDTO.getUser()) ) {
+            throw new AccessDeniedHandleException("Bạn không có quyền sửa bài này","400");
         }
 
-        post.setContent(postDTO.getContent());
-        post.setUpdatedAt(LocalDate.now());
+        post.get().setContent(postDTO.getContent());
+        post.get().setUpdatedAt(LocalDate.now());
 
-        return postRepository.save(post);
+        Post existingPost = post.get();
+        return postRepository.save(existingPost);
 
     }
 
@@ -92,9 +92,9 @@ public class PostServiceImpl implements PostService {
      * @return
      */
     @Override
-    public Post approvePost(Long postId)  throws Exception{
+    public Post approvePost(Long postId){
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy bài viết"));
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy bài viết","400"));
 
         post.setStatus(PostStatus.APPROVED);
 
@@ -107,9 +107,9 @@ public class PostServiceImpl implements PostService {
      * @return
      */
     @Override
-    public Post rejectPost(Long postId) throws Exception {
+    public Post rejectPost(Long postId){
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy bài viết"));
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy bài viết","400"));
 
         post.setStatus(PostStatus.REJECTED);
 
@@ -134,9 +134,9 @@ public class PostServiceImpl implements PostService {
             return postRepository.findByStatus(status);
 
     }
-    public PostDTO getPostWithComments(Long id) throws Exception {
+    public PostDTO getPostWithComments(Long id) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy bài viết"));
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy bài viết","400"));
 
         List<GetPostResponse> rootComments = post.getComments().stream()
                 .filter(c -> c.getParent() == null)

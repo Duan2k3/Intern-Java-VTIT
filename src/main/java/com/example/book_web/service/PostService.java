@@ -8,12 +8,12 @@ import com.example.book_web.response.PostResponse;
 import java.util.List;
 
 public interface PostService {
-    Post createPost(PostDTO postDTO) throws Exception;
-    Post updatePost(Long id , PostDTO postDTO) throws Exception;
+    Post createPost(PostDTO postDTO) ;
+    Post updatePost(Long id , PostDTO postDTO) ;
     void deletePost(Long id);
-    PostDTO getPostWithComments(Long id) throws Exception;
-    Post approvePost(Long postId) throws Exception;
-    Post rejectPost(Long postId) throws Exception;
+    PostDTO getPostWithComments(Long id) ;
+    Post approvePost(Long postId) ;
+    Post rejectPost(Long postId) ;
     List<PostResponse> getPublicPosts();
     List<PostResponse> getPostsByStatus(PostStatus status);
 }
