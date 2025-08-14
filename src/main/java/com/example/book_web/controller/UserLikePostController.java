@@ -30,9 +30,8 @@ public class UserLikePostController {
     }
 
     @GetMapping("/dislike")
-    public ResponseEntity<BaseResponse> likeanddislike(@RequestBody LikeResponse likeResponse) throws Exception{
+    public ResponseEntity<BaseResponse> likeanddislike(@RequestBody LikeResponse likeResponse) {
 
-        try {
             boolean isLiked = userLikePostService.toggleLikePost(likeResponse.getUserId(), likeResponse.getPostId());
 
             String message = isLiked ? "Đã thích bài viết" : "Đã bỏ thích bài viết";
@@ -43,14 +42,6 @@ public class UserLikePostController {
                             .message(message)
 
                     .build());
-
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(BaseResponse.builder()
-                            .message(e.getMessage())
-                    .build());
-        }
-
 
     }
 }

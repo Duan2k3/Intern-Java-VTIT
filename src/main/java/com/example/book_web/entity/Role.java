@@ -37,7 +37,7 @@ public class Role {
     @EqualsAndHashCode.Exclude
     private List<User> users ;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "role_permissions",
             joinColumns = @JoinColumn(name = "role_id"),

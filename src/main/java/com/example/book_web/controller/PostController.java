@@ -8,6 +8,7 @@ import com.example.book_web.enums.PostStatus;
 import com.example.book_web.response.BaseResponse;
 import com.example.book_web.response.PostResponse;
 import com.example.book_web.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +26,14 @@ public class PostController {
     @PostMapping("/create")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_CREATE_POST')")
-    public ResponseEntity<?> createPost(@RequestBody PostDTO postDTO) {
+    public ResponseEntity<?> createPost(@Valid @RequestBody PostDTO postDTO) {
             return ResponseConfig.success(postService.createPost(postDTO),"Thanh cong");
 
     }
     @PutMapping("/update/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_UPDATE_POST')")
-    public ResponseEntity<?> updatePost( @PathVariable Long id ,@RequestBody PostDTO postDTO) {
+    public ResponseEntity<?> updatePost( @PathVariable Long id ,@Valid @RequestBody PostDTO postDTO) {
             return ResponseConfig.success(postService.updatePost(id,postDTO),"Thanh cong");
 
     }

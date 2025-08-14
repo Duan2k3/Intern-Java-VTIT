@@ -11,6 +11,7 @@ import java.util.List;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role,Long> {
+    @Query("SELECT u FROM Role u WHERE u.name = :name")
     Role findByName(String name) ;
 
     @Query("SELECT new com.example.book_web.response.RoleResponse(u.name) FROM Role u")

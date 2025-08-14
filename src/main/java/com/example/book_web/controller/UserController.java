@@ -1,7 +1,6 @@
 package com.example.book_web.controller;
 
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.LoginDTO;
 import com.example.book_web.dto.UserDTO;
 import com.example.book_web.entity.User;
@@ -11,6 +10,7 @@ import com.example.book_web.service.UserService;
 import com.example.book_web.service.impl.JwtService;
 import com.example.book_web.utils.MessageKeys;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +39,6 @@ public class UserController {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
-    private final LocalizationUtils localizationUtils;
     @GetMapping("/detail/{id}")
     @Operation(summary = "get-user" , description = "Xem user")
     @PreAuthorize("hasAuthority('ROLE_VIEW_USER')")
@@ -51,11 +50,10 @@ public class UserController {
 
     @PutMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_USER')")
-    public ResponseEntity<?> updateUser( @RequestBody UserDTO userDto) {
+    public ResponseEntity<?> updateUser( @Valid @RequestBody UserDTO userDto) {
         return ResponseConfig.success(userService.updateUser(userDto));
 
     }
-
 
 
     @DeleteMapping("/delete/{id}")
@@ -67,7 +65,6 @@ public class UserController {
 
 
     }
-
 
     @GetMapping("/get-user")
     @PreAuthorize("hasAuthority('ROLE_VIEW_USER')")
@@ -99,14 +96,13 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthenticationRequest request){
-       return ResponseConfig.success(userService.login(request),MessageKeys.LOGIN_SUCCESSFULLY);
+    public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest request){
+       return ResponseConfig.success(userService.login(request),"Thanh cong");
         }
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_USER')")
-    public ResponseEntity<?> createUser(@RequestBody  UserDTO userDTO) {
-
+    public ResponseEntity<?> createUser(@Valid @RequestBody  UserDTO userDTO) {
            User user =  userService.createUser(userDTO);
            return ResponseConfig.success(user);
 

@@ -17,8 +17,6 @@ public class PermissionDTO {
      private Long id ;
     private String name;
 
-
-
     private String description;
 
     public PermissionDTO(String description , String name) {

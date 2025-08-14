@@ -2,8 +2,8 @@ package com.example.book_web.service.impl;
 
 import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
+import com.example.book_web.common.MessageCommon;
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.UserDTO;
 import com.example.book_web.entity.Role;
 import com.example.book_web.entity.User;
@@ -37,9 +37,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final LocalizationUtils localizationUtils;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final MessageCommon messageCommon;
 
 
     @Override
@@ -49,10 +49,10 @@ public class UserServiceImpl implements UserService {
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
             User user = userRepository.findByUsername(request.getUsername())
-                    .orElseThrow(() -> new DataNotFoundException(MessageKeys.USER_NOT_EXIST,"400"));
+                    .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER_NOT_EXIST), "400"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.PASSWORD_NOT_MATCH));
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.PASSWORD_NOT_MATCH),"400");
         }
             String token = jwtService.generateToken(user.getUsername());
             return token;
@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
            Optional<UserResponse> user = userRepository.findUserById(id);
            if (user.isEmpty()){
-             throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_NAME_NOT_FOUND),"400");
+             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER_NOT_EXIST), "400");
            }
             return user.get();
 
@@ -80,8 +80,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(UserDTO dto) {
+        if (dto.getUserName() == null || dto.getUserName().isEmpty()) {
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER.USER_IS_NULL), "400");
+        }
         if (userRepository.existsByUsername(dto.getUserName())) {
-            throw new DataExistingException("Tên người dùng đã tồn tại","400");
+            throw new DataExistingException(messageCommon.getMessage(MessageKeys.USER.USER_EXISTING), "400");
         }
         Role userRole = roleRepository.findByName("USER");
         User user = User.builder()
@@ -104,6 +107,9 @@ public class UserServiceImpl implements UserService {
 
         Optional<User> existingUser = userRepository.findById(dto.getId());
 
+        if (existingUser.isEmpty()) {
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER_NOT_EXIST), "400");
+        }
         User user = existingUser.get();
         user.setFullname(dto.getFullname());
         user.setPhoneNumber(dto.getPhoneNumber());
@@ -115,7 +121,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException(localizationUtils.getLocalizedMessage(MessageKeys.USER_NOT_EXIST));
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER_NOT_EXIST), "400");
         }
         userRepository.deleteById(id);
     }

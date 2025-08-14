@@ -2,7 +2,6 @@ package com.example.book_web.controller;
 
 import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.PermissionDTO;
 import com.example.book_web.entity.Permission;
 import com.example.book_web.response.BaseResponse;
@@ -25,7 +24,6 @@ import java.util.List;
 @RequestMapping("/api/v1/library/permission")
 public class PermissionController {
     private final PermissionService permissionService;
-    private final LocalizationUtils localizationUtils;
     @PostMapping("/create")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_CREATE_PERMISSION')")

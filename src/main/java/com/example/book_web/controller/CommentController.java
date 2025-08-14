@@ -2,7 +2,6 @@ package com.example.book_web.controller;
 
 import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.components.LocalizationUtils;
 import com.example.book_web.dto.CommentDTO;
 import com.example.book_web.dto.CreateCommentDTO;
 import com.example.book_web.entity.Comment;
@@ -10,6 +9,7 @@ import com.example.book_web.response.ApiResponse;
 import com.example.book_web.response.BaseResponse;
 import com.example.book_web.service.CommentService;
 import com.example.book_web.utils.MessageKeys;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,14 +23,13 @@ import java.util.List;
 @RequestMapping("/api/v1/library/comment")
 public class CommentController {
     private final CommentService commentService;
-    private final LocalizationUtils localizationUtils;
 
     @PostMapping("/create")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_CREATE_COMMENT')")
     public ResponseEntity<?> createComment(
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody CreateCommentDTO dto) {
+            @Valid @RequestBody CreateCommentDTO dto) {
             return ResponseConfig.success(commentService.createComment(authHeader,dto),"Thanh cong");
 
     }
@@ -45,7 +44,7 @@ public class CommentController {
     @PreAuthorize("hasAuthority('ROLE_UPDATE_COMMENT')")
     public ResponseEntity<?> updateComment(@PathVariable Long id ,
                                                       @RequestHeader("Authorization") String token,
-                                                      @RequestBody CommentDTO commentDTO)
+                                                   @Valid @RequestBody CommentDTO commentDTO)
             {
             return ResponseConfig.success(commentService.updateComment(token,id,commentDTO),"Thanh cong");
     }

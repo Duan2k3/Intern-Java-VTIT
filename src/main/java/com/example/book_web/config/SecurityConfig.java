@@ -27,7 +27,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @Configuration
 //@EnableMethodSecurity
 @EnableWebSecurity(debug = true)
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 @EnableWebMvc
 @RequiredArgsConstructor
 

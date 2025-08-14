@@ -36,9 +36,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @EntityGraph(attributePaths = "roles")
     Optional<User> findByUsername(String username) ;
 
-    Optional<User> findUserById(User user) throws Exception;
-
-    boolean existsByUsername(String username);
+    boolean existsByUsername(@Param("username") String username);
 
 
     @Query("SELECT u FROM User u WHERE " +

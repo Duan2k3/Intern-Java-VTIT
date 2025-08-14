@@ -21,18 +21,22 @@ public class BookDTO {
     @JsonProperty("id")
     private Long id;
 
+    @NotBlank(message = MessageKeys.BOOK.BOOK_TITLE_NOT_BLANK)
     @JsonProperty("title")
     private String title;
 
     @JsonProperty("image")
     private String image;
 
+    @NotBlank(message = MessageKeys.BOOK.BOOK_AUTHOR_NOT_BLANK)
     @JsonProperty("author")
     private String authors;
 
+    @NotNull(message = MessageKeys.BOOK.BOOK_QUANTITY_NOT_NULL)
     @JsonProperty("quantity")
     private Integer quantity;
 
+    @NotBlank(message = MessageKeys.BOOK.BOOK_DESCRIPTION_NOT_BLANK)
     @JsonProperty("description")
     private String description;
 

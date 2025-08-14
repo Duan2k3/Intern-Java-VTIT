@@ -1,6 +1,8 @@
 package com.example.book_web.service.impl;
 
+import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
+import com.example.book_web.common.MessageCommon;
 import com.example.book_web.entity.Book;
 import com.example.book_web.dto.BookDTO;
 import com.example.book_web.entity.Category;
@@ -9,6 +11,7 @@ import com.example.book_web.repository.BookRepository;
 import com.example.book_web.repository.CategoryRepository;
 import com.example.book_web.response.BookResponse;
 import com.example.book_web.service.BookService;
+import com.example.book_web.utils.MessageKeys;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +45,7 @@ public class BookServiceImpl implements BookService{
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
+    private final MessageCommon messageCommon;
 
 
     /**
@@ -54,13 +58,13 @@ public class BookServiceImpl implements BookService{
     public Book createBook(BookDTO bookDTO)  {
         Optional<Book> existing = bookRepository.findBookByTitle(bookDTO.getTitle());
         if (existing.isPresent()) {
-            throw new DataNotFoundException("Book exist","200");
+            throw new DataExistingException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_EXISTING), "400");
         }
         List<Category> categories = new ArrayList<>();
         for (Long categoryId : bookDTO.getCategoriesIds()) {
             Optional<Category> existingCategory = categoryRepository.findById(categoryId);
             if (existingCategory.isEmpty()) {
-                throw new DataNotFoundException("Category with ID " + categoryId + " not found.","200");
+                throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST), "400");
             }
             categories.add(existingCategory.get());
         }
@@ -91,7 +95,7 @@ public class BookServiceImpl implements BookService{
     public Book updateBook(BookDTO bookDTO)  {
         Optional<Book> existing = bookRepository.findById(bookDTO.getId());
         if(existing.isEmpty()){
-            throw new DataNotFoundException("Book not existing","400");
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST), "400");
 
         }
         Book book = existing.get();
@@ -102,7 +106,7 @@ public class BookServiceImpl implements BookService{
         for(Long categoryId : bookDTO.getCategoriesIds()){
             Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
             if(optionalCategory.isEmpty()){
-                throw new DataNotFoundException("Category with ID \" + categoryId + \" not found.\"","400");
+                throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST) + categoryId, "400");
             }
             categories.add(optionalCategory.get());
         }
@@ -122,7 +126,7 @@ public class BookServiceImpl implements BookService{
 
         Optional<Book> existing = bookRepository.findById(id);
         if(existing.isEmpty()){
-            throw new DataNotFoundException("User not existing","400");
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST), "400");
         }
 
          bookRepository.deleteById(id);

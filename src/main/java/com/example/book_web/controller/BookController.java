@@ -3,7 +3,7 @@ package com.example.book_web.controller;
 import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.Exception.CategoryNotFoundException;
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.components.LocalizationUtils;
+
 import com.example.book_web.dto.BookDTO;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.User;
@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
@@ -44,19 +45,18 @@ import java.util.stream.Collectors;
 @Tag(name = "Book Controller")
 public class BookController {
     private final BookService bookService;
-    private final LocalizationUtils localizationUtils;
     private final ExcelExporter excelExporter;
     private final BookServiceRedis productRedisService;
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_BOOK')")
-    public ResponseEntity<?> createBook(@RequestBody BookDTO bookDTO){
+    public ResponseEntity<?> createBook(@Valid @RequestBody BookDTO bookDTO){
             return ResponseConfig.success(bookService.createBook(bookDTO),"Thanh cong");
     }
 
     @PutMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_BOOK')")
     @Transactional
-    public ResponseEntity<?> updateBook( @RequestBody BookDTO bookDTO) {
+    public ResponseEntity<?> updateBook(@Valid @RequestBody BookDTO bookDTO) {
             return ResponseConfig.success(bookService.updateBook(bookDTO),"Thanh cong");
 
 

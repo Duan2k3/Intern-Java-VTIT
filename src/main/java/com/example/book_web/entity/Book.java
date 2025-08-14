@@ -25,7 +25,7 @@ public class Book {
     @Column(name = "title",nullable = false)
     private String title;
 
-    @Column(name = "image", nullable = false)
+    @Column(name = "image")
     private String image;
 
     @Column(name = "author",nullable = false)
