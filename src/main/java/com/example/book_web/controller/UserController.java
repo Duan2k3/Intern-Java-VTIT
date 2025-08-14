@@ -2,6 +2,7 @@ package com.example.book_web.controller;
 
 import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.dto.LoginDTO;
+import com.example.book_web.dto.TokenDTO;
 import com.example.book_web.dto.UserDTO;
 import com.example.book_web.entity.User;
 import com.example.book_web.repository.UserRepository;
@@ -48,10 +49,10 @@ public class UserController {
 
     }
 
-    @PutMapping("/update")
+    @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_USER')")
-    public ResponseEntity<?> updateUser( @Valid @RequestBody UserDTO userDto) {
-        return ResponseConfig.success(userService.updateUser(userDto));
+    public ResponseEntity<?> updateUser( @Valid @RequestBody UserDTO userDto,@PathVariable Long id) {
+        return ResponseConfig.success(userService.updateUser(id,userDto),"Cập nhật thành công");
 
     }
 
@@ -61,7 +62,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_DELETE_USER')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-       return ResponseConfig.success(null);
+       return ResponseConfig.success(null, "Xoá thành công");
 
 
     }
@@ -106,6 +107,20 @@ public class UserController {
            User user =  userService.createUser(userDTO);
            return ResponseConfig.success(user);
 
+    }
+
+    @PostMapping("/refresh-token")
+    @Transactional
+    public ResponseEntity<?> refreshToken(@RequestBody TokenDTO token) {
+
+        return ResponseConfig.success(userService.refreshToken(token.getRefreshToken()), "Lấy lại token thành công");
+    }
+
+    @PostMapping("/logout")
+    @Transactional
+    public ResponseEntity<?> logout(@RequestBody TokenDTO token) {
+
+        return ResponseConfig.success(userService.logout(token), "Đăng xuất thành công");
     }
 
 

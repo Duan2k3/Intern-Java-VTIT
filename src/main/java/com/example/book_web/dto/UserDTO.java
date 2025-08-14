@@ -24,11 +24,9 @@ import java.util.Date;
 
 public class UserDTO {
 
-    private Long id;
-
     @JsonProperty("user_name")
     @NotBlank(message = MessageKeys.USER.USER_NAME_NOT_BLANK)
-    private String userName;
+    private String username;
 
     @JsonProperty("email")
     @Pattern(regexp = "^[A-Za-z0-9._%+-]+@gmail\\.com$", message = "Chỉ chấp nhận email Gmail")

@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MessageKeys {
-    public static final String LOGIN_SUCCESSFULLY =  "user.login.login_successfully";
-    public static final String PASSWORD_NOT_MATCH =  "user.register.password_not_match";
+    public static final String LOGIN_SUCCESSFULLY = "user.login.login_successfully";
+    public static final String PASSWORD_NOT_MATCH = "user.register.password_not_match";
     public static final String USER_IS_LOCKED = "user.login.user_is_locked";
     public static final String USER_NOT_EXIST = "user.account_not_exist";
     public static final String USER_EXISTING = "user.user_existing";
@@ -14,7 +14,7 @@ public class MessageKeys {
     public static final String USER_NAME_NOT_FOUND = "user.username.notfound";
 
 
-    public static class USER{
+    public static class USER {
         public static final String USER_NAME_NOT_BLANK = "user.user_name_not_blank";
         public static final String PASSWORD_NOT_BLANK = "user.password_not_blank";
         public static final String FULLNAME_NOT_BLANK = "user.full_name_not_blank";
@@ -25,9 +25,10 @@ public class MessageKeys {
         public static final String USER_EXISTING = "user.user_existing";
         public static final String USER_IS_NULL = "user.user_is_null";
 
-        private USER(){
+        private USER() {
         }
     }
+
     public static class BOOK {
         public static final String BOOK_TITLE_NOT_BLANK = "book.book_title_not_blank";
         public static final String BOOK_AUTHOR_NOT_BLANK = "book.book_author_not_blank";
@@ -40,6 +41,7 @@ public class MessageKeys {
         private BOOK() {
         }
     }
+
     public static class BORROW {
         public static final String BORROW_USER_ID_NOT_NULL = "borrow.borrow_user_id_not_null";
         public static final String BORROW_DATE_NOT_NULL = "borrow.borrow_date_not_null";
@@ -48,6 +50,7 @@ public class MessageKeys {
         private BORROW() {
         }
     }
+
     public static class BORROW_HISTORY {
         public static final String BORROW_DATE_NOT_NULL = "borrow_history.borrow_date_not_null";
         public static final String RETURNED_DATE_NOT_NULL = "borrow_history.returned_date_not_null";
@@ -56,6 +59,7 @@ public class MessageKeys {
         private BORROW_HISTORY() {
         }
     }
+
     public static class CATEGORY {
         public static final String CATEGORY_NAME_NOT_BLANK = "category.category_name_not_blank";
         public static final String CATEGORY_DESCRIPTION_NOT_BLANK = "category.category_description_not_blank";
@@ -66,6 +70,7 @@ public class MessageKeys {
         private CATEGORY() {
         }
     }
+
     public static class COMMENT {
         public static final String CONTENT_NOT_BLANK = "comment.comment_content_not_blank";
         public static final String USER_ID_NOT_NULL = "comment.comment_user_id_not_null";
@@ -77,6 +82,7 @@ public class MessageKeys {
         private COMMENT() {
         }
     }
+
     public static class LOGIN {
         public static final String USER_NAME_NOT_BLANK = "login.user_name_not_blank";
         public static final String PASSWORD_NOT_BLANK = "login.password_not_blank";
@@ -84,10 +90,19 @@ public class MessageKeys {
         private LOGIN() {
         }
     }
-    public static class POST{
+
+    public static class POST {
         public static final String POST_CONTENT_NOT_BLANK = "post.post_content_not_blank";
 
         private POST() {
+        }
+    }
+
+    public static class TOKEN {
+        public static final String TOKEN_NOT_EXIST = "token.token_not_exist";
+        public static final String TOKEN_EXPIRED =  "token.token_expired";
+        public static final String LOGOUT_SUCCESS = "token.logout_success";
+        private TOKEN() {
         }
     }
 }

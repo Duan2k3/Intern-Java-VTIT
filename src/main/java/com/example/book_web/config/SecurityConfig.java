@@ -69,6 +69,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/library/categories/statistics/**").permitAll()
                         .requestMatchers("/api/v1/library/books/images/**").permitAll()
                         .requestMatchers("/api/v1/library/like/**").permitAll()
+                        .requestMatchers("/api/v1/library/user/refresh-token").permitAll()
+                        .requestMatchers("/api/v1/library/user/logout").permitAll()
 
                         .requestMatchers(
                                 "/v3/api-docs/**",

@@ -1,13 +1,17 @@
 package com.example.book_web.config;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MapperConfiguration {
     @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
+    public ModelMapper getMapper() {
+        var mapper = new ModelMapper();
+        mapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.STRICT);
+        return mapper;
     }
 }
