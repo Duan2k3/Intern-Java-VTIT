@@ -1,5 +1,6 @@
 package com.example.book_web.service.impl;
 
+import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.dto.BorrowDTO;
 import com.example.book_web.dto.BorrowDetailDTO;
@@ -149,7 +150,7 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     public Borrow getBorrow(Long id) {
         return borrowRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Borrow not found"));
+                .orElseThrow(() -> new DataNotFoundException("Borrow not found with id: " + id, "404"));
     }
 
     /**
@@ -159,7 +160,7 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     public void deleteBorrow(Long id) {
         Borrow borrow = borrowRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Borrow not found"));
+                .orElseThrow(() -> new DataNotFoundException("Borrow not found with id: " + id, "404"));
         borrowRepository.delete(borrow);
     }
 
@@ -196,19 +197,19 @@ public class BorrowServiceImpl implements BorrowService {
         Long id = existingUser.getId();
 
         Borrow borrow = borrowRepository.findById(request.getBorrowId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu mượn"));
+                .orElseThrow(() -> new DataNotFoundException("Borrow not found with id: " + request.getBorrowId(), "404"));
 
         for (Long bookId : request.getBookIds()) {
             BorrowDetail detail = borrowDetailRepository.findByBorrowIdAndBookId(borrow.getId(), bookId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết mượn sách"));
+                    .orElseThrow(() -> new DataNotFoundException("BorrowDetail not found for borrowId: " + borrow.getId() + " and bookId: " + bookId, "404"));
 
             if (detail.getStatus() == BorrowStatus.RETURNED || detail.getStatus() == BorrowStatus.LATE_RETURN) {
-                throw new RuntimeException("Sách đã được trả rồi");
+                throw new DataExistingException("Book with ID " + bookId + " has already been returned or is late.", "400");
             }
 
             Optional<Book> book = bookRepository.findById(bookId);
             if (book.isEmpty()) {
-                throw new RuntimeException("Book not existing");
+                throw new DataNotFoundException("Book not found with id: " + bookId, "404");
             }
             Book existingBook = book.get();
             existingBook.setQuantity(existingBook.getQuantity() + detail.getQuantity());
