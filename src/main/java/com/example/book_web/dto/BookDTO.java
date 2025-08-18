@@ -18,9 +18,6 @@ import java.util.List;
 @Builder
 public class BookDTO {
 
-    @JsonProperty("id")
-    private Long id;
-
     @NotBlank(message = MessageKeys.BOOK.BOOK_TITLE_NOT_BLANK)
     @JsonProperty("title")
     private String title;

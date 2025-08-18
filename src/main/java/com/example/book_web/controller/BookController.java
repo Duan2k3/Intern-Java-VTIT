@@ -53,11 +53,11 @@ public class BookController {
             return ResponseConfig.success(bookService.createBook(bookDTO),"Thanh cong");
     }
 
-    @PutMapping("/update")
+    @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_BOOK')")
     @Transactional
-    public ResponseEntity<?> updateBook(@Valid @RequestBody BookDTO bookDTO) {
-            return ResponseConfig.success(bookService.updateBook(bookDTO),"Thanh cong");
+    public ResponseEntity<?> updateBook(@PathVariable Long id ,@Valid @RequestBody BookDTO bookDTO) {
+            return ResponseConfig.success(bookService.updateBook(id,bookDTO),"Thanh cong");
 
 
     }
@@ -81,7 +81,7 @@ public class BookController {
 
     @GetMapping("/search")
     @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
-    public ResponseEntity<SearchBook> getBookByKeyword(
+    public ResponseEntity<ResponseDto<Page<Book>>> getBookByKeyword(
             @RequestParam(defaultValue = "", required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int limit,
@@ -97,12 +97,7 @@ public class BookController {
 
         Page<Book> bookPage = bookService.getBookByKeyWord(keyword, pageable);
 
-        SearchBook response = new SearchBook();
-        response.setBooks(bookPage.getContent());
-        response.setTotalPages(bookPage.getTotalPages());
-        response.setTotalElements(bookPage.getTotalElements());
-        response.setCurrentPage(bookPage.getNumber());
-        return ResponseEntity.ok(response);
+        return ResponseConfig.success(bookPage,"Thanh cong");
 
     }
 
@@ -206,6 +201,11 @@ public class BookController {
 
 
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
+    public ResponseEntity<ResponseDto<BookDTO>> getById(@PathVariable Long id) {
+        return ResponseConfig.success(bookService.getById(id));
+    }
 
 
 

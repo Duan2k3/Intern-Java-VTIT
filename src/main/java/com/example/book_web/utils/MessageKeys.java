@@ -37,6 +37,7 @@ public class MessageKeys {
         public static final String BOOK_DESCRIPTION_NOT_BLANK = "book.book_description_not_blank";
         public static final String BOOK_EXISTING = "book.book_existing";
         public static final String BOOK_NOT_EXIST = "book.book_not_exist";
+        public static final String QUANTITY_NOT_VALID = "book.quantity_not_valid";
 
         private BOOK() {
         }

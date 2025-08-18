@@ -15,13 +15,13 @@ import java.util.List;
 public interface BookService {
     Book createBook(BookDTO bookDTO) ;
 
-    Book updateBook( BookDTO bookDTO) ;
+    Book updateBook( Long id ,BookDTO bookDTO) ;
     void deleteBook(Long id) ;
     Page<BookResponse> getAllBook(String keyword  , PageRequest pageRequest);
     void generateExcel(HttpServletResponse servletResponse) throws IOException;
 
     Page<Book> getBookByKeyWord(String keyword , Pageable pageable);
 
-
+    BookDTO getById(Long id);
     String storeBookImage(Long bookId, MultipartFile file) throws Exception;
 }

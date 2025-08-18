@@ -1,5 +1,6 @@
 package com.example.book_web.repository;
 
+import com.example.book_web.dto.BookDTO;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.User;
 import org.springframework.data.domain.Page;
@@ -23,7 +24,6 @@ public interface BookRepository extends JpaRepository<Book,Long> {
 
      @Query("SELECT b.title FROM Book b")
      List<String> findAllTitles();
-
 
 
 }

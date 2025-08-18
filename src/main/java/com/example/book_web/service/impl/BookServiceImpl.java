@@ -10,6 +10,7 @@ import com.example.book_web.entity.User;
 import com.example.book_web.repository.BookRepository;
 import com.example.book_web.repository.CategoryRepository;
 import com.example.book_web.response.BookResponse;
+import com.example.book_web.response.SearchBook;
 import com.example.book_web.service.BookService;
 import com.example.book_web.utils.MessageKeys;
 import jakarta.servlet.ServletOutputStream;
@@ -60,6 +61,9 @@ public class BookServiceImpl implements BookService{
         if (existing.isPresent()) {
             throw new DataExistingException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_EXISTING), "400");
         }
+        if(bookDTO.getQuantity() <= 0){
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.QUANTITY_NOT_VALID), "400");
+        }
         List<Category> categories = new ArrayList<>();
         for (Long categoryId : bookDTO.getCategoriesIds()) {
             Optional<Category> existingCategory = categoryRepository.findById(categoryId);
@@ -71,7 +75,6 @@ public class BookServiceImpl implements BookService{
         Book book = Book.builder()
                 .categories(categories)
                 .createdAt(LocalDate.now())
-                .updatedAt(LocalDate.now())
                 .authors(bookDTO.getAuthors())
                 .title(bookDTO.getTitle())
                 .description(bookDTO.getDescription())
@@ -92,8 +95,8 @@ public class BookServiceImpl implements BookService{
      */
     @Override
     @Transactional
-    public Book updateBook(BookDTO bookDTO)  {
-        Optional<Book> existing = bookRepository.findById(bookDTO.getId());
+    public Book updateBook(Long id ,BookDTO bookDTO)  {
+        Optional<Book> existing = bookRepository.findById(id);
         if(existing.isEmpty()){
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST), "400");
 
@@ -174,9 +177,30 @@ public class BookServiceImpl implements BookService{
             return bookRepository.findAll(pageable);
         }
         else {
-            return bookRepository.findByKeyWord(keyword, pageable);
 
+            Page<Book> bookPage = bookRepository.findByKeyWord(keyword, pageable);
+            bookPage.getTotalPages();
+            bookPage.getTotalElements();
+            bookPage.getNumberOfElements();
+            bookPage.getSize();
+
+            return bookPage;
         }
+    }
+
+    /**
+     * @param id
+     * @return
+     */
+    @Override
+    public BookDTO getById(Long id) {
+      Optional<Book> book = bookRepository.findById(id);
+      if (book.isEmpty()){
+          throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST),"400");
+      }
+      Book existingBook = book.get();
+      BookDTO bookDTO = modelMapper.map(existingBook,BookDTO.class);
+      return bookDTO;
     }
 
 

@@ -2,6 +2,7 @@ package com.example.book_web.controller;
 
 import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
+import com.example.book_web.dto.BookDTO;
 import com.example.book_web.dto.CategoryDTO;
 import com.example.book_web.entity.Category;
 import com.example.book_web.response.ApiResponse;
