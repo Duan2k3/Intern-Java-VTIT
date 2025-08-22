@@ -2,21 +2,16 @@ package com.example.book_web.controller;
 
 import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.dto.BookDTO;
-import com.example.book_web.dto.CategoryDTO;
-import com.example.book_web.entity.Category;
-import com.example.book_web.response.ApiResponse;
-import com.example.book_web.response.BaseResponse;
+import com.example.book_web.dto.book.BookDTO;
+
+import com.example.book_web.request.category.CategoryRequest;
 import com.example.book_web.service.CategoryService;
-import com.example.book_web.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -33,15 +28,15 @@ public class CategoryController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_CATEGORY')")
-    public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryDTO categoryDTO){
+    public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryRequest request){
 
-            return ResponseConfig.success(categoryService.createCategory(categoryDTO));
+            return ResponseConfig.success(categoryService.createCategory(request));
 
     }
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_CATEGORY')")
-    public ResponseEntity<?> updateCategory(@Valid @RequestBody CategoryDTO categoryDTO, @PathVariable Long id){
-            return ResponseConfig.success(categoryService.updateCategory(id ,categoryDTO),"Thanh cong");
+    public ResponseEntity<?> updateCategory(@Valid @RequestBody CategoryRequest request, @PathVariable Long id){
+            return ResponseConfig.success(categoryService.updateCategory(id ,request),"Thanh cong");
 
     }
 
@@ -55,8 +50,9 @@ public class CategoryController {
 
     }
 
-    @GetMapping("/statistics/{id}")
-    public ResponseEntity<ResponseDto<List<String>>> detailCategory(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_VIEW_CATEGORY')")
+    public ResponseEntity<ResponseDto<List<BookDTO>>> detailCategory(@PathVariable Long id) {
         return ResponseConfig.success(categoryService.getCategoryDetail(id), "Thanh cong");
 
     }

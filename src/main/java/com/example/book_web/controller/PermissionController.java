@@ -4,19 +4,13 @@ import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.dto.PermissionDTO;
 import com.example.book_web.entity.Permission;
-import com.example.book_web.response.BaseResponse;
 import com.example.book_web.service.PermissionService;
-import com.example.book_web.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
-import org.apache.xmlbeans.impl.xb.xsdschema.Public;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -30,12 +24,12 @@ public class PermissionController {
     public ResponseEntity<?> createPermission(@RequestBody PermissionDTO permissionDTO){
             return ResponseConfig.success(permissionService.createPermission(permissionDTO),"Thanh cong");
     }
-    @PutMapping("/update")
+    @PutMapping("/update/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_UPDATE_PERMISSION')")
-    public ResponseEntity<ResponseDto<Permission>> updatePermission(@RequestBody PermissionDTO permissionDTO){
+    public ResponseEntity<ResponseDto<Permission>> updatePermission(@RequestBody PermissionDTO permissionDTO,@PathVariable Long id){
 
-            return ResponseConfig.success(permissionService.updatePermission(permissionDTO));
+            return ResponseConfig.success(permissionService.updatePermission(id,permissionDTO));
     }
 
     @DeleteMapping("/delete/{id}")

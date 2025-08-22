@@ -1,14 +1,14 @@
 package com.example.book_web.controller;
 
-import com.example.book_web.response.BaseResponse;
+import com.example.book_web.common.ResponseConfig;
+
 import com.example.book_web.response.LikeResponse;
 import com.example.book_web.service.UserLikePostService;
-import com.example.book_web.service.impl.UserLikePostImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.ResponseCache;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,18 +30,24 @@ public class UserLikePostController {
     }
 
     @GetMapping("/dislike")
-    public ResponseEntity<BaseResponse> likeanddislike(@RequestBody LikeResponse likeResponse) {
+    public ResponseEntity<?> likeanddislike(@RequestBody LikeResponse likeResponse) {
 
             boolean isLiked = userLikePostService.toggleLikePost(likeResponse.getUserId(), likeResponse.getPostId());
 
             String message = isLiked ? "Đã thích bài viết" : "Đã bỏ thích bài viết";
 
             long sum = userLikePostService.countLikes(likeResponse.getPostId());
-            return ResponseEntity.ok(BaseResponse.builder()
-                              .data(String.valueOf(sum))
-                            .message(message)
+//            return ResponseEntity.ok(BaseResponse.builder()
+//                              .data(String.valueOf(sum))
+//                            .message(message)
+//
+//                    .build());
 
-                    .build());
+        return ResponseConfig.success(String.valueOf(sum), message);
+
+
+
+
 
     }
 }

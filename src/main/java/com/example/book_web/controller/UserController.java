@@ -1,15 +1,18 @@
 package com.example.book_web.controller;
 
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.dto.LoginDTO;
 import com.example.book_web.dto.TokenDTO;
-import com.example.book_web.dto.UserDTO;
+import com.example.book_web.dto.user.UserDTO;
+
 import com.example.book_web.entity.User;
 import com.example.book_web.repository.UserRepository;
+import com.example.book_web.request.user.ActiveUserRequest;
+import com.example.book_web.request.user.AuthenticationRequest;
+import com.example.book_web.request.user.UserListResponse;
+import com.example.book_web.request.user.UserRequest;
 import com.example.book_web.response.*;
 import com.example.book_web.service.UserService;
 import com.example.book_web.service.impl.JwtService;
-import com.example.book_web.utils.MessageKeys;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +23,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -103,9 +103,8 @@ public class UserController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_USER')")
-    public ResponseEntity<?> createUser(@Valid @RequestBody  UserDTO userDTO) {
-           User user =  userService.createUser(userDTO);
-           return ResponseConfig.success(user);
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserRequest request) {
+           return ResponseConfig.success(userService.createUser(request),"Thanh cong");
 
     }
 
@@ -123,7 +122,12 @@ public class UserController {
         return ResponseConfig.success(userService.logout(token), "Đăng xuất thành công");
     }
 
-
+    @PostMapping("/active")
+    @Transactional
+    public ResponseEntity<?> activeUser(@RequestBody ActiveUserRequest request) {
+        userService.ActiveUser( request);
+        return ResponseConfig.success(null, "Kích hoạt tài khoản thành công");
+    }
 
 
 

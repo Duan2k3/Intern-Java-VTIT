@@ -3,17 +3,17 @@ package com.example.book_web.service.impl;
 import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.common.MessageCommon;
-import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.dto.TokenDTO;
-import com.example.book_web.dto.UserDTO;
+import com.example.book_web.dto.user.UserDTO;
 import com.example.book_web.entity.Role;
 import com.example.book_web.entity.Token;
 import com.example.book_web.entity.User;
 import com.example.book_web.repository.RoleRepository;
 import com.example.book_web.repository.TokenRepository;
 import com.example.book_web.repository.UserRepository;
-import com.example.book_web.response.AuthenticationRequest;
-import com.example.book_web.response.BaseResponse;
+import com.example.book_web.request.user.ActiveUserRequest;
+import com.example.book_web.request.user.AuthenticationRequest;
+import com.example.book_web.request.user.UserRequest;
 import com.example.book_web.response.UserResponse;
 import com.example.book_web.service.UserService;
 import com.example.book_web.utils.MessageKeys;
@@ -22,19 +22,14 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,6 +45,7 @@ public class UserServiceImpl implements UserService {
     private final MessageCommon messageCommon;
     private final TokenRepository tokenRepository;
     private final ModelMapper modelMapper;
+    private final EmailServiceImpl emailService;
 
     @Value("${jwt.expiration}")
     private long expiration;
@@ -61,7 +57,7 @@ public class UserServiceImpl implements UserService {
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
             User user = userRepository.findByUsername(request.getUsername())
-                    .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER_NOT_EXIST), "400"));
+                    .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER.USER_NOT_EXIST), "400"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.PASSWORD_NOT_MATCH),"400");
@@ -104,28 +100,35 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(UserDTO dto) {
-        if (dto.getUsername() == null || dto.getUsername().isEmpty()) {
+    public UserDTO createUser(UserRequest request) {
+        if (request.getUsername() == null || request.getUsername().isEmpty()) {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER.USER_IS_NULL), "400");
         }
-        if (userRepository.existsByUsername(dto.getUsername())) {
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new DataExistingException(messageCommon.getMessage(MessageKeys.USER.USER_EXISTING), "400");
         }
         Role userRole = roleRepository.findByName("USER");
         User user = User.builder()
-                .username(dto.getUsername())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .fullname(dto.getFullname())
-                .phoneNumber(dto.getPhoneNumber())
-                .identityNumber(dto.getIdentityNumber())
-                .age(dto.getAge())
-
-                .email(dto.getEmail())
-                .dateOfBirth(dto.getBirthday())
-                .address(dto.getAddress())
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .fullname(request.getFullname())
+                .phoneNumber(request.getPhoneNumber())
+                .identityNumber(request.getIdentityNumber())
+                .age(request.getAge())
+                .email(request.getEmail())
+                .dateOfBirth(request.getDateOfBirth())
+                .address(request.getAddress())
                 .roles(List.of(userRole))
+                .active(0)
                 .build();
-        return userRepository.save(user);
+        user.setKeyActive(UUID.randomUUID().toString());
+
+        userRepository.save(user);
+
+        emailService.sendActiveUserNotification(user);
+//        return userRepository.save(user);
+   return modelMapper.map(user,UserDTO.class);
+
     }
 
     @Override
@@ -208,6 +211,20 @@ public class UserServiceImpl implements UserService {
         existingToken.setIsDeleted(0);
         tokenRepository.save(existingToken);
         return messageCommon.getMessage(MessageKeys.TOKEN.LOGOUT_SUCCESS);
+    }
+
+
+    @Override
+    public void ActiveUser(ActiveUserRequest request) {
+        Optional<User> user = userRepository.findByKeyActive(request.getKeyActive(), request.getUsername());
+        if (user.isEmpty()) {
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER_NOT_EXIST), "400");
+        }
+        User existingUser = user.get();
+        existingUser.setActive(1);
+        existingUser.setKeyActive(UUID.randomUUID().toString());
+        userRepository.save(existingUser);
+
     }
 
 }

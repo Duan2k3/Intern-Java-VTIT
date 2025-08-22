@@ -1,11 +1,11 @@
 package com.example.book_web.service;
 
-import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.dto.TokenDTO;
-import com.example.book_web.dto.UserDTO;
-import com.example.book_web.entity.Token;
+import com.example.book_web.dto.user.UserDTO;
 import com.example.book_web.entity.User;
-import com.example.book_web.response.AuthenticationRequest;
+import com.example.book_web.request.user.ActiveUserRequest;
+import com.example.book_web.request.user.AuthenticationRequest;
+import com.example.book_web.request.user.UserRequest;
 import com.example.book_web.response.UserResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +19,7 @@ public interface UserService {
 
      List<UserResponse> getAllUsers();
      UserResponse userDetail(Long id) ;
-     User createUser(UserDTO userDTO);
+     UserDTO createUser(UserRequest request);
 
      User updateUser(Long id , UserDTO userDTO);
 
@@ -30,4 +30,6 @@ public interface UserService {
     String refreshToken(String token);
 
     String logout(TokenDTO token) ;
+
+    void ActiveUser(ActiveUserRequest request) ;
 }

@@ -12,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class BorrowDetailDTO {
-    @JsonProperty("book_id")
+    @NotNull(message = MessageKeys.BORROW.BORROW_USER_ID_NOT_NULL)
     private Long bookId;
 
     @NotNull(message = MessageKeys.BOOK.BOOK_QUANTITY_NOT_NULL)

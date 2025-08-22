@@ -1,5 +1,6 @@
-package com.example.book_web.response;
+package com.example.book_web.request.user;
 
+import com.example.book_web.response.UserResponseForKeyWord;
 import lombok.*;
 
 import java.util.List;

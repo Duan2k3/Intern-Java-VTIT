@@ -2,9 +2,8 @@ package com.example.book_web.service.impl;
 
 import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
+import com.example.book_web.common.MessageCommon;
 import com.example.book_web.dto.BorrowDTO;
-import com.example.book_web.dto.BorrowDetailDTO;
-import com.example.book_web.dto.BorrowHistoryDTO;
 import com.example.book_web.dto.ReturnBookDTO;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.Borrow;
@@ -15,11 +14,13 @@ import com.example.book_web.repository.BookRepository;
 import com.example.book_web.repository.BorrowDetailRepository;
 import com.example.book_web.repository.BorrowRepository;
 import com.example.book_web.repository.UserRepository;
-import com.example.book_web.response.ReturnBookRequest;
+import com.example.book_web.request.borrow.BorrowRequest;
+import com.example.book_web.request.borrow_detail.BorrowDetailRequest;
+import com.example.book_web.request.borrow.ReturnBookRequest;
 import com.example.book_web.service.BorrowService;
+import com.example.book_web.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,10 +38,11 @@ public class BorrowServiceImpl implements BorrowService {
     private final BorrowDetailRepository borrowDetailRepository;
     private final BookRepository bookRepository;
     private final JwtService jwtService;
+    private final MessageCommon messageCommon;
 
     @Transactional
     @Override
-    public Borrow createBorrow(String token , BorrowDTO borrowDTO)  {
+    public BorrowDTO createBorrow(String token , BorrowRequest request)  {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -48,20 +50,18 @@ public class BorrowServiceImpl implements BorrowService {
         Optional<User>  user = userRepository.findByUsername(name);
         User existingUser = user.get();
         Long id = existingUser.getId();
-//        User user = userRepository.findById(borrowDTO.getUserId())
-//                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Borrow borrow = Borrow.builder()
                 .borrowDate(LocalDate.now())
-                .returnDate(borrowDTO.getReturnDate())
+                .returnDate(request.getReturnDate())
                 .user(existingUser)
 
                 .build();
 
         List<BorrowDetail> details = new ArrayList<>();
-        for (BorrowDetailDTO d : borrowDTO.getBorrowDetails()) {
+        for (BorrowDetailRequest d : request.getBorrowDetails()) {
             Book book = bookRepository.findById(d.getBookId())
-                    .orElseThrow(() -> new RuntimeException("Book not found"));
+                    .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST),"400"));
 
             if(book.getQuantity() < d.getQuantity()){
                 throw  new DataNotFoundException("Số lượng sách không đủ","400");
@@ -80,7 +80,8 @@ public class BorrowServiceImpl implements BorrowService {
 
         borrow.setBorrowDetails(details);
 
-        return borrowRepository.save(borrow);
+        borrowRepository.save(borrow);
+        return modelMapper.map(request,BorrowDTO.class);
     }
 
 
@@ -89,7 +90,7 @@ public class BorrowServiceImpl implements BorrowService {
         List<BorrowDetail> details = borrowDetailRepository.findByBorrowIdIn(bookDTO.getBorrowDetailIds());
 
         if (details.isEmpty()) {
-            throw new RuntimeException("No borrow details found for the provided ids.");
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW_HISTORY.TITLE_NOT_NULL),"400");
         }
 
         for (BorrowDetail detail : details) {
@@ -117,7 +118,7 @@ public class BorrowServiceImpl implements BorrowService {
         if (borrowOptional.isPresent()) {
             return borrowOptional.get();
         } else {
-            throw new RuntimeException("Borrow not found with id: " + bookDTO.getId());
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW.BORROW_NOT_EXISTING) + bookDTO.getId(),"400");
         }
     }
 

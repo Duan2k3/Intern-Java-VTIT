@@ -62,6 +62,12 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDate updatedAt;
 
+    @Column(name = "active")
+    private Integer active;
+
+    @Column(name="key_active")
+    private String keyActive;
+
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

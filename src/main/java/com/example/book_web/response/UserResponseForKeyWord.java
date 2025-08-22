@@ -27,6 +27,7 @@ public class UserResponseForKeyWord {
                 .password(user.getPassword())
                 .fullname(user.getFullname())
 
+
                 .phoneNumber(user.getPhoneNumber())
 
                 .build();

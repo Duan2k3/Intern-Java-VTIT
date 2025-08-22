@@ -1,6 +1,11 @@
 package com.example.book_web.filter;
 
+import com.example.book_web.Exception.DataNotFoundException;
+import com.example.book_web.common.MessageCommon;
+import com.example.book_web.entity.Token;
+import com.example.book_web.repository.TokenRepository;
 import com.example.book_web.service.impl.JwtService;
+import com.example.book_web.utils.MessageKeys;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+
 import java.util.stream.Collectors;
 
 @Component
@@ -25,6 +31,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -39,6 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
+
         Claims claims = jwtService.extractAllClaims(token);
         String username = claims.getSubject();
 

@@ -3,13 +3,16 @@ package com.example.book_web.service.impl;
 import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.common.MessageCommon;
+import com.example.book_web.dto.book.BookDTO;
 import com.example.book_web.dto.CategoryDTO;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.Category;
 import com.example.book_web.repository.CategoryRepository;
+import com.example.book_web.request.category.CategoryRequest;
 import com.example.book_web.service.CategoryService;
 import com.example.book_web.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
        private final CategoryRepository categoryRepository;
        private final MessageCommon messageCommon;
+       private final ModelMapper modelMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -32,34 +36,34 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
-    public Category createCategory(CategoryDTO categoryDTO) {
-        Optional<Category> existingCategory = categoryRepository.findCategoryByName(categoryDTO.getName());
+    public CategoryDTO createCategory(CategoryRequest request) {
+        Optional<Category> existingCategory = categoryRepository.findCategoryByName(request.getName());
         if(!existingCategory.isEmpty()){
             throw new DataExistingException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NAME_EXISTING),"400" );
         }
-        Category category = Category.builder()
-                .name(categoryDTO.getName())
-                .build();
+        Category category = modelMapper.map(request,Category.class);
+        Category saveCategory = categoryRepository.save(category);
 
-        return categoryRepository.save(category);
+        return modelMapper.map(request,CategoryDTO.class);
 
     }
 
     @Override
-    public Category updateCategory(Long id ,CategoryDTO categoryDTO)  {
+    public CategoryDTO updateCategory(Long id , CategoryRequest request)  {
         Optional<Category> category = categoryRepository.findById(id);
         if(category.isEmpty()){
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST),"400");
         }
 
-        Optional<Category> optionalCategory = categoryRepository.findCategoryByName(categoryDTO.getName());
+        Optional<Category> optionalCategory = categoryRepository.findCategoryByName(request.getName());
         if(!optionalCategory.isEmpty()){
             throw new DataExistingException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NAME_EXISTING),"400" );
         }
 
         Category existingCategory = category.get();
-        existingCategory.setName(categoryDTO.getName());
-        return categoryRepository.save(existingCategory);
+        existingCategory.setName(request.getName());
+         categoryRepository.save(existingCategory);
+         return modelMapper.map(request,CategoryDTO.class);
     }
 
     @Override
@@ -77,14 +81,26 @@ public class CategoryServiceImpl implements CategoryService {
      * @throws Exception
      */
     @Override
-    public List<String> getCategoryDetail(Long id)  {
+    public List<BookDTO> getCategoryDetail(Long id)  {
         Optional<Category> existing = categoryRepository.findById(id);
         if(existing.isEmpty()){
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST), "400");
         }
         Category category = existing.get();
 
-        return category.getBooks().stream().map(Book::getTitle)
+        List<Book> books = category.getBooks();
+        if(books.isEmpty()){
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST), "400");
+        }
+        return books.stream()
+                .map(book -> BookDTO.builder()
+                        .title(book.getTitle())
+                        .authors(book.getAuthors())
+                        .quantity(book.getQuantity())
+                        .image(book.getImage())
+                        .description(book.getDescription())
+                        .categoriesIds(book.getCategories().stream().map(Category::getId).collect(Collectors.toList()))
+                        .build())
                 .collect(Collectors.toList());
 
     }

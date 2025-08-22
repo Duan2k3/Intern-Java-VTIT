@@ -48,8 +48,8 @@ public class PermissionImpl implements PermissionService {
      * @return
      */
     @Override
-    public Permission updatePermission( PermissionDTO permissionDTO){
-        Optional<Permission> existingPermission = permissionRepository.findById(permissionDTO.getId());
+    public Permission updatePermission( Long id ,PermissionDTO permissionDTO){
+        Optional<Permission> existingPermission = permissionRepository.findById(id);
         if(existingPermission.isEmpty()){
             throw new DataNotFoundException("Permission khong ton tai","400");
         }

@@ -56,4 +56,21 @@ public class EmailServiceImpl {
         mailSender.send(message);
     }
 
+    public void sendActiveUserNotification(User user) {
+        String email = user.getEmail();
+        String subject = "Thông báo kích hoạt tài khoản";
+        String content = "Chào " + user.getUsername() + ",\n\n"
+                +"Tên đăng nhập của bạn là: " + user.getUsername() + "\n"
+                + "Để sử dụng dịch vụ của chúng tôi, bạn cần kích hoạt tài khoản của mình.\n"
+                + "Vui lòng sử dụng mã kích hoạt sau đây:\n"
+                + "Mã kích hoạt tài khoản của ban là  " + user.getKeyActive() +" \n\n"
+                + "Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.";
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setText(content);
+        message.setSubject(subject);
+        message.setTo(email);
+        mailSender.send(message);
+    }
+
 }

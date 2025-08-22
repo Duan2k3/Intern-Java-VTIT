@@ -1,4 +1,4 @@
-package com.example.book_web.response;
+package com.example.book_web.request.borrow;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;

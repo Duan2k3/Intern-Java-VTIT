@@ -18,12 +18,14 @@ public class MessageKeys {
         public static final String USER_NAME_NOT_BLANK = "user.user_name_not_blank";
         public static final String PASSWORD_NOT_BLANK = "user.password_not_blank";
         public static final String FULLNAME_NOT_BLANK = "user.full_name_not_blank";
+        public static final String USER_NOT_EXIST = "user.account_not_exist";
         public static final String PHONE_NUMBER_NOT_BLANK = "user.phone_number_not_blank";
         public static final String IDENTITY_NUMBER_NOT_BLANK = "user.identity_number_not_blank";
         public static final String AGE_NOT_NULL = "user.age_not_blank";
         public static final String ADDRESS_NOT_BLANK = "user.address_not_blank";
         public static final String USER_EXISTING = "user.user_existing";
         public static final String USER_IS_NULL = "user.user_is_null";
+        public static final String USER_KEY_ACTIVE_NOT_BLANK = "user.user_key_active_not_blank";
 
         private USER() {
         }
@@ -47,6 +49,7 @@ public class MessageKeys {
         public static final String BORROW_USER_ID_NOT_NULL = "borrow.borrow_user_id_not_null";
         public static final String BORROW_DATE_NOT_NULL = "borrow.borrow_date_not_null";
         public static final String BORROW_RETURN_DATE_NOT_NULL = "borrow.borrow_return_date_not_null";
+        public static final String BORROW_NOT_EXISTING = "borrow.borrow_not_existing";
 
         private BORROW() {
         }

@@ -3,6 +3,7 @@ package com.example.book_web.Exception;
 import com.example.book_web.common.MessageCommon;
 import com.example.book_web.common.ResponseConfig;
 import jakarta.validation.ConstraintViolation;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -81,5 +82,16 @@ public class ExceptionHandingController {
 
         return message;
     }
+
+    @ExceptionHandler(JRException.class)
+    public ResponseEntity<String> handleJasperException(JRException ex) {
+        return ResponseConfig.error(FORBIDDEN, "500", "Có lỗi JasperReports: " + ex.getMessage());
+    }
+    @ExceptionHandler(FileProcessException.class)
+    public ResponseEntity<String> handleIOException(Exception ex) {
+        return ResponseConfig.error(FORBIDDEN, "500", "Có lỗi xảy ra: " + ex.getMessage());
+    }
+
+
 
 }

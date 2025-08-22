@@ -22,10 +22,10 @@ import java.time.format.DateTimeFormatter;
 @Configuration
 public class RedisConfig {
     private static final Logger logger = LoggerFactory.getLogger(RedisConfig.class);
-    @Value("${spring.data.redis.host}") // Read 'spring.data.redis.host' property from application.yml
+    @Value("${spring.data.redis.host}")
     private String redisHost;
 
-    @Value("${spring.data.redis.port}") // Read 'spring.data.redis.port' property from application.yml
+    @Value("${spring.data.redis.port}")
     private int redisPort;
 
     @Bean

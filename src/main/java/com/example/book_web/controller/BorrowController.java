@@ -1,22 +1,18 @@
 package com.example.book_web.controller;
 
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.dto.BorrowDTO;
 import com.example.book_web.dto.ReturnBookDTO;
 
 
-import com.example.book_web.response.ReturnBookRequest;
+import com.example.book_web.request.borrow.BorrowRequest;
+import com.example.book_web.request.borrow.ReturnBookRequest;
 import com.example.book_web.service.BorrowService;
-import com.example.book_web.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,9 +23,9 @@ public class BorrowController {
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_BORROW')")
     public ResponseEntity<?> createBorrow(
-           @Valid @RequestBody BorrowDTO borrowDTO,
+            @Valid @RequestBody BorrowRequest request,
             @RequestHeader("Authorization") String authHeader) {
-        return ResponseConfig.success(borrowService.createBorrow(authHeader, borrowDTO), "Thanh cong");
+        return ResponseConfig.success(borrowService.createBorrow(authHeader, request), "Thanh cong");
 
     }
 

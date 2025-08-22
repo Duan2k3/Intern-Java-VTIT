@@ -4,26 +4,26 @@ import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.Exception.CategoryNotFoundException;
 import com.example.book_web.common.ResponseConfig;
 
-import com.example.book_web.dto.BookDTO;
+import com.example.book_web.dto.book.BookDTO;
+import com.example.book_web.dto.book.FilterBookDTO;
 import com.example.book_web.entity.Book;
-import com.example.book_web.entity.User;
+import com.example.book_web.request.book.BookRequest;
 import com.example.book_web.response.*;
 import com.example.book_web.service.BookService;
 import com.example.book_web.service.BookServiceRedis;
 import com.example.book_web.service.impl.ExcelExporter;
-import com.example.book_web.utils.MessageKeys;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,11 +32,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -47,17 +45,18 @@ public class BookController {
     private final BookService bookService;
     private final ExcelExporter excelExporter;
     private final BookServiceRedis productRedisService;
+
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_BOOK')")
-    public ResponseEntity<?> createBook(@Valid @RequestBody BookDTO bookDTO){
-            return ResponseConfig.success(bookService.createBook(bookDTO),"Thanh cong");
+    public ResponseEntity<?> createBook(@Valid @RequestBody BookRequest request) {
+        return ResponseConfig.success(bookService.createBook(request), "Thanh cong");
     }
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_BOOK')")
     @Transactional
-    public ResponseEntity<?> updateBook(@PathVariable Long id ,@Valid @RequestBody BookDTO bookDTO) {
-            return ResponseConfig.success(bookService.updateBook(id,bookDTO),"Thanh cong");
+    public ResponseEntity<?> updateBook(@PathVariable Long id, @Valid @RequestBody BookRequest request) {
+        return ResponseConfig.success(bookService.updateBook(id, request), "Thanh cong");
 
 
     }
@@ -66,18 +65,17 @@ public class BookController {
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('ROLE_DELETE_BOOK')")
     public ResponseEntity<?> deleteBook(@PathVariable Long id) {
-            bookService.deleteBook(id);
-          return ResponseConfig.success(null,"Thanh cong");
+        bookService.deleteBook(id);
+        return ResponseConfig.success(null, "Thanh cong");
 
     }
 
     @GetMapping("/excel")
     @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
-    public void generate(HttpServletResponse response) throws IOException{
+    public void generate(HttpServletResponse response) throws IOException {
         excelExporter.exportBooks(response);
 
     }
-
 
     @GetMapping("/search")
     @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
@@ -97,7 +95,7 @@ public class BookController {
 
         Page<Book> bookPage = bookService.getBookByKeyWord(keyword, pageable);
 
-        return ResponseConfig.success(bookPage,"Thanh cong");
+        return ResponseConfig.success(bookPage, "Thanh cong");
 
     }
 
@@ -133,7 +131,7 @@ public class BookController {
 
         List<BookResponse> productResponses = productRedisService
                 .getAllBook(keyword, categoryId, pageRequest);
-        if(productResponses == null) {
+        if (productResponses == null) {
             Page<BookResponse> productPage = bookService
                     .getAllBook(keyword, pageRequest);
 
@@ -163,7 +161,6 @@ public class BookController {
     }
 
 
-
     @PostMapping(value = "/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_CREATE_BOOK')")
     public ResponseEntity<?> uploadBookImage(@PathVariable Long id,
@@ -177,9 +174,7 @@ public class BookController {
     }
 
 
-
     @GetMapping("/images/{imageName}")
-    @PreAuthorize("hasAuthority('ROLE_CREATE_BOOK')")
     public ResponseEntity<?> viewImage(@PathVariable String imageName) {
         try {
             Path imagePath = Paths.get("uploads/" + imageName);
@@ -200,7 +195,6 @@ public class BookController {
     }
 
 
-
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
     public ResponseEntity<ResponseDto<BookDTO>> getById(@PathVariable Long id) {
@@ -208,6 +202,16 @@ public class BookController {
     }
 
 
+    @GetMapping("/export/pdf")
+    @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
+    public ResponseEntity<?> exportBooksToPdf() throws JRException {
+            byte[] pdf = bookService.exportBooksToPdf();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=books.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdf);
+
+    }
 
 
 }

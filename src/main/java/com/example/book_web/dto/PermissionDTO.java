@@ -14,14 +14,9 @@ import lombok.*;
 @Builder
 public class PermissionDTO {
 
-     private Long id ;
     private String name;
 
     private String description;
 
-    public PermissionDTO(String description , String name) {
-        this.description= description;
-        this.name = name;
-    }
 
 }

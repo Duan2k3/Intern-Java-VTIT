@@ -1,6 +1,5 @@
 package com.example.book_web.repository;
 
-import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.entity.User;
 import com.example.book_web.response.UserResponse;
 import org.springframework.data.domain.Page;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.zip.DataFormatException;
 
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
@@ -24,8 +22,6 @@ public interface UserRepository extends JpaRepository<User,Long> {
             "FROM User u")
     List<UserResponse> findAllUsers();
 
-
-
     @Query("SELECT new com.example.book_web.response.UserResponse(u.username, " +
             "u.password, u.address, " +
             "u.fullname)" +
@@ -33,8 +29,12 @@ public interface UserRepository extends JpaRepository<User,Long> {
     Optional<UserResponse> findUserById(@Param("id") Long id);
 
 
+//    @EntityGraph(attributePaths = "roles")
+//    @Query("SELECT u.username FROM User u Where active = 1")
+//    Optional<User> findByUsername(String username) ;
+
     @EntityGraph(attributePaths = "roles")
-    Optional<User> findByUsername(String username) ;
+    Optional<User> findByUsername(String username);
 
     boolean existsByUsername(@Param("username") String username);
 
@@ -44,6 +44,9 @@ public interface UserRepository extends JpaRepository<User,Long> {
             "LOWER(u.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(u.address) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<User> findByKeyWord(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.keyActive = :keyActive and u.username = :username")
+    Optional<User> findByKeyActive(@Param("keyActive") String keyActive, @Param("username") String username);
 
 
 }
