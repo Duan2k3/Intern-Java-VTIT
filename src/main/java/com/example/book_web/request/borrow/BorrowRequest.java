@@ -13,14 +13,13 @@ import java.util.List;
 @Data
 public class BorrowRequest {
 
-    @NotNull(message = MessageKeys.BORROW.BORROW_USER_ID_NOT_NULL)
-    private Long userId;
-
     @NotNull(message = MessageKeys.BORROW.BORROW_DATE_NOT_NULL)
     private LocalDate borrowDate;
 
     @NotNull(message = MessageKeys.BORROW.BORROW_RETURN_DATE_NOT_NULL)
     private LocalDate returnDate;
+
+    private String note;
 
     private List<BorrowDetailRequest> borrowDetails;
 }

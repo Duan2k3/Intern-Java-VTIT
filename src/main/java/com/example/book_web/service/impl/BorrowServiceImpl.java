@@ -3,8 +3,9 @@ package com.example.book_web.service.impl;
 import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.common.MessageCommon;
-import com.example.book_web.dto.BorrowDTO;
+import com.example.book_web.dto.borrow.BorrowDTO;
 import com.example.book_web.dto.ReturnBookDTO;
+import com.example.book_web.dto.borrow.InforBorrowDto;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.Borrow;
 import com.example.book_web.entity.BorrowDetail;
@@ -55,6 +56,7 @@ public class BorrowServiceImpl implements BorrowService {
                 .borrowDate(LocalDate.now())
                 .returnDate(request.getReturnDate())
                 .user(existingUser)
+                .note(request.getNote())
 
                 .build();
 
@@ -225,6 +227,33 @@ public class BorrowServiceImpl implements BorrowService {
 
             borrowDetailRepository.save(detail);
         }
+    }
+
+    /**
+     * @param id
+     * @return
+     */
+    @Override
+    public List<InforBorrowDto> getInforBorrow(Long id) {
+        List<InforBorrowDto> list = borrowRepository.getBorrowHistory(id);
+        return list;
+    }
+
+    /**
+     * @param token
+     * @return
+     */
+    @Override
+    public List<InforBorrowDto> getHistoryById(String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String name = jwtService.extractUsername(token);
+        Optional<User>  user = userRepository.findByUsername(name);
+        User existingUser = user.get();
+        Long userId = existingUser.getId();
+        List<InforBorrowDto> list = borrowRepository.getBorrowHistory(userId);
+        return list;
     }
 
 

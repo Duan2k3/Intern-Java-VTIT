@@ -1,7 +1,8 @@
 package com.example.book_web.service;
 
-import com.example.book_web.dto.BorrowDTO;
+import com.example.book_web.dto.borrow.BorrowDTO;
 import com.example.book_web.dto.ReturnBookDTO;
+import com.example.book_web.dto.borrow.InforBorrowDto;
 import com.example.book_web.entity.Borrow;
 import com.example.book_web.entity.BorrowDetail;
 import com.example.book_web.request.borrow.BorrowRequest;
@@ -22,4 +23,8 @@ public interface BorrowService {
     List<BorrowDetail> getBorrowHistory1(String token);
 
     void returnBook(String token ,ReturnBookRequest request) ;
+
+    List<InforBorrowDto> getInforBorrow(Long id);
+    List<InforBorrowDto> getHistoryById(String token);
+
 }

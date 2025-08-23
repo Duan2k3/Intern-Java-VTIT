@@ -70,12 +70,24 @@ public class BorrowController {
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_CREATE_BORROW')")
     public ResponseEntity<?> returnBook(@RequestBody ReturnBookRequest request,
-                                                  @RequestHeader("Authorization") String authHeader
+                                        @RequestHeader("Authorization") String authHeader
 
     ) {
 
         borrowService.returnBook(authHeader, request);
-        return ResponseConfig.success(null,"Thanh cong");
+        return ResponseConfig.success(null, "Thanh cong");
 
+    }
+
+    @GetMapping("/infor/{id}")
+    @PreAuthorize("hasAuthority('ROLE_VIEW_BORROW')")
+    public ResponseEntity<?> getInforBorrow(@PathVariable Long id) {
+        return ResponseConfig.success(borrowService.getInforBorrow(id), "Thanh cong");
+    }
+
+    @GetMapping("/history-by-id")
+    @PreAuthorize("hasAuthority('ROLE_CREATE_BORROW')")
+    public ResponseEntity<?> getHistoryById(@RequestHeader("Authorization") String authHeader) {
+        return ResponseConfig.success(borrowService.getHistoryById(authHeader), "Thanh cong");
     }
 }

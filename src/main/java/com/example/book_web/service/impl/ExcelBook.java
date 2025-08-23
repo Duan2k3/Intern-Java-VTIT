@@ -31,7 +31,6 @@ public class ExcelBook {
 
 
     public void exportBook(HttpServletResponse response) throws IOException {
-//        List<Book> books = bookRepository.findAll();
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Books");
 
