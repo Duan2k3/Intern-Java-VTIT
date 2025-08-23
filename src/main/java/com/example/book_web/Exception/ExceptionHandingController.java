@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolation;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -92,6 +93,8 @@ public class ExceptionHandingController {
         return ResponseConfig.error(FORBIDDEN, "500", "Có lỗi xảy ra: " + ex.getMessage());
     }
 
-
-
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<String> handleAuthenticationException(AuthenticationException ex) {
+        return ResponseConfig.error(FORBIDDEN, "403", "Xác thực thất bại: " );
+    }
 }

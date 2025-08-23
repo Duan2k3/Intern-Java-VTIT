@@ -4,7 +4,7 @@ import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.common.MessageCommon;
 import com.example.book_web.dto.borrow.BorrowDTO;
-import com.example.book_web.dto.ReturnBookDTO;
+import com.example.book_web.dto.borrow.ReturnBookDTO;
 import com.example.book_web.dto.borrow.InforBorrowDto;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.Borrow;

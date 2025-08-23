@@ -2,7 +2,7 @@ package com.example.book_web.service.impl;
 
 import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
-import com.example.book_web.dto.PermissionDTO;
+import com.example.book_web.dto.permission.PermissionDTO;
 import com.example.book_web.entity.Permission;
 import com.example.book_web.entity.Role;
 import com.example.book_web.entity.User;
@@ -11,11 +11,9 @@ import com.example.book_web.repository.UserRepository;
 import com.example.book_web.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

@@ -1,6 +1,6 @@
 package com.example.book_web.service;
 
-import com.example.book_web.dto.PostDTO;
+import com.example.book_web.dto.post.PostDTO;
 import com.example.book_web.entity.Post;
 import com.example.book_web.enums.PostStatus;
 import com.example.book_web.response.PostResponse;

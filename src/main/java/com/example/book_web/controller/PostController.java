@@ -2,7 +2,7 @@ package com.example.book_web.controller;
 
 import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.dto.PostDTO;
+import com.example.book_web.dto.post.PostDTO;
 import com.example.book_web.enums.PostStatus;
 import com.example.book_web.response.PostResponse;
 import com.example.book_web.service.PostService;

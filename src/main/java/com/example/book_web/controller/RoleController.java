@@ -2,20 +2,16 @@ package com.example.book_web.controller;
 
 import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.dto.RoleDTO;
+import com.example.book_web.dto.role.RoleDTO;
 import com.example.book_web.entity.Role;
 import com.example.book_web.response.RoleDetailResponse;
-import com.example.book_web.response.RoleResponse;
 import com.example.book_web.service.RoleService;
-import com.example.book_web.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/library/role")

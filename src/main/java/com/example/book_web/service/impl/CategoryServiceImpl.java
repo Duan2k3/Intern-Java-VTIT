@@ -4,7 +4,7 @@ import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.common.MessageCommon;
 import com.example.book_web.dto.book.BookDTO;
-import com.example.book_web.dto.CategoryDTO;
+import com.example.book_web.dto.category.CategoryDTO;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.Category;
 import com.example.book_web.repository.CategoryRepository;

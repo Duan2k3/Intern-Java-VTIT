@@ -1,7 +1,7 @@
 package com.example.book_web.service;
 
 import com.example.book_web.dto.book.BookDTO;
-import com.example.book_web.dto.CategoryDTO;
+import com.example.book_web.dto.category.CategoryDTO;
 import com.example.book_web.entity.Category;
 import com.example.book_web.request.category.CategoryRequest;
 

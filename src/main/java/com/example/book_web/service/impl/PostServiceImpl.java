@@ -2,7 +2,7 @@ package com.example.book_web.service.impl;
 
 import com.example.book_web.Exception.AccessDeniedHandleException;
 import com.example.book_web.Exception.DataNotFoundException;
-import com.example.book_web.dto.PostDTO;
+import com.example.book_web.dto.post.PostDTO;
 import com.example.book_web.entity.Comment;
 import com.example.book_web.entity.Post;
 import com.example.book_web.entity.User;
@@ -15,7 +15,6 @@ import com.example.book_web.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;

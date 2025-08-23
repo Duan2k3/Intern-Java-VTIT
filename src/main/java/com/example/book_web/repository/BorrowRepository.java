@@ -1,6 +1,6 @@
 package com.example.book_web.repository;
 
-import com.example.book_web.dto.BorrowHistoryDTO;
+
 import com.example.book_web.dto.TestDto;
 import com.example.book_web.dto.borrow.InforBorrowDto;
 import com.example.book_web.entity.Borrow;
@@ -16,7 +16,7 @@ import java.util.List;
 public interface BorrowRepository extends JpaRepository<Borrow,Long> {
 
     @Query("SELECT new com.example.book_web.dto.borrow.InforBorrowDto(" +
-            "bk.id, bk.title, bk.authors, bd.quantity, u.email, u.username) " +
+            "bk.id, bk.title, bk.authors, bd.quantity, u.email, u.username,bd.status) " +
             "FROM Borrow b " +
             "JOIN b.borrowDetails bd " +
             "JOIN bd.book bk " +

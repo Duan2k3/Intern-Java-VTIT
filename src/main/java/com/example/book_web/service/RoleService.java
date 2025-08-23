@@ -1,9 +1,7 @@
 package com.example.book_web.service;
 
-import com.example.book_web.dto.RoleDTO;
-import com.example.book_web.entity.Permission;
+import com.example.book_web.dto.role.RoleDTO;
 import com.example.book_web.entity.Role;
-import com.example.book_web.entity.User;
 import com.example.book_web.response.RoleDetailResponse;
 import com.example.book_web.response.RoleResponse;
 

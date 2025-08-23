@@ -3,7 +3,7 @@ package com.example.book_web.service.impl;
 import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.common.MessageCommon;
-import com.example.book_web.dto.TokenDTO;
+import com.example.book_web.dto.token.TokenDTO;
 import com.example.book_web.dto.user.UserDTO;
 import com.example.book_web.entity.Role;
 import com.example.book_web.entity.Token;
@@ -201,13 +201,17 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public String logout(TokenDTO token) {
-        Token existingToken = tokenRepository.findByRefreshToken(token.getRefreshToken())
+    public String logout(String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        Token existingToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new DataNotFoundException(
                         messageCommon.getMessage(MessageKeys.TOKEN.TOKEN_NOT_EXIST), "400"
                 ));
 
         existingToken.setExpired(LocalDateTime.now());
+        existingToken.setUpdatedAt(LocalDateTime.now());
         existingToken.setIsDeleted(0);
         tokenRepository.save(existingToken);
         return messageCommon.getMessage(MessageKeys.TOKEN.LOGOUT_SUCCESS);

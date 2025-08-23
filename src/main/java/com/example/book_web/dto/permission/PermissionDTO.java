@@ -1,8 +1,5 @@
-package com.example.book_web.dto;
+package com.example.book_web.dto.permission;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.*;
 
 @Data

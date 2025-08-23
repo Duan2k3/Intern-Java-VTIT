@@ -34,16 +34,19 @@ public interface UserRepository extends JpaRepository<User,Long> {
 //    Optional<User> findByUsername(String username) ;
 
     @EntityGraph(attributePaths = "roles")
-    Optional<User> findByUsername(String username);
+    @Query("SELECT u FROM User u Where u.active = 1 and u.username = :username")
+    Optional<User> findByUsername(@Param("username") String username);
 
     boolean existsByUsername(@Param("username") String username);
 
 
-    @Query("SELECT u FROM User u WHERE " +
-            "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(u.fullname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(u.address) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @Query("SELECT u FROM User u " +
+            "WHERE (:keyword IS NULL OR :keyword = '' " +
+            "   OR u.username LIKE %:keyword% " +
+            "   OR u.fullname LIKE %:keyword% " +
+            "   OR u.address LIKE %:keyword%)")
     Page<User> findByKeyWord(@Param("keyword") String keyword, Pageable pageable);
+
 
     @Query("SELECT u FROM User u WHERE u.keyActive = :keyActive and u.username = :username")
     Optional<User> findByKeyActive(@Param("keyActive") String keyActive, @Param("username") String username);

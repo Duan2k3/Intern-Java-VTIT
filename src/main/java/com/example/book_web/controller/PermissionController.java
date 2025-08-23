@@ -2,7 +2,7 @@ package com.example.book_web.controller;
 
 import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.dto.PermissionDTO;
+import com.example.book_web.dto.permission.PermissionDTO;
 import com.example.book_web.entity.Permission;
 import com.example.book_web.service.PermissionService;
 import lombok.RequiredArgsConstructor;

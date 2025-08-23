@@ -1,9 +1,7 @@
 package com.example.book_web.request.borrow;
 
-import com.example.book_web.dto.BorrowDetailDTO;
 import com.example.book_web.request.borrow_detail.BorrowDetailRequest;
 import com.example.book_web.utils.MessageKeys;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 

@@ -149,7 +149,6 @@ public class BookServiceImpl implements BookService {
      * @return
      */
 
-
     @Override
     public void generateExcel(HttpServletResponse response)  {
 //        List<Book> books = bookRepository.findAll();
@@ -169,13 +168,7 @@ public class BookServiceImpl implements BookService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return bookRepository.findAll(pageable);
         } else {
-
-            Page<Book> bookPage = bookRepository.findByKeyWord(keyword, pageable);
-            bookPage.getTotalPages();
-            bookPage.getTotalElements();
-            bookPage.getNumberOfElements();
-            bookPage.getSize();
-
+            Page<Book> bookPage = bookRepository.findByKeyWord("%" + keyword.trim() + "%", pageable);
             return bookPage;
         }
     }

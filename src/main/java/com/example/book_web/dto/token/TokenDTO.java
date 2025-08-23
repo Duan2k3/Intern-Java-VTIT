@@ -1,4 +1,4 @@
-package com.example.book_web.dto;
+package com.example.book_web.dto.token;
 
 
 import lombok.*;

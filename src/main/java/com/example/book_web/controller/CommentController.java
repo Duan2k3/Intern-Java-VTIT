@@ -2,8 +2,10 @@ package com.example.book_web.controller;
 
 import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.dto.CommentDTO;
-import com.example.book_web.dto.CreateCommentDTO;
+import com.example.book_web.dto.comment.CommentDTO;
+import com.example.book_web.dto.comment.CreateCommentDTO;
+import com.example.book_web.request.comment.CommentRequest;
+import com.example.book_web.request.comment.CreateCommentRequest;
 import com.example.book_web.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +27,8 @@ public class CommentController {
     @PreAuthorize("hasAuthority('ROLE_CREATE_COMMENT')")
     public ResponseEntity<?> createComment(
             @RequestHeader("Authorization") String authHeader,
-            @Valid @RequestBody CreateCommentDTO dto) {
-            return ResponseConfig.success(commentService.createComment(authHeader,dto),"Thanh cong");
+            @Valid @RequestBody CreateCommentRequest request) {
+            return ResponseConfig.success(commentService.createComment(authHeader,request),"Thanh cong");
 
     }
     @GetMapping("/post/{postId}")
@@ -39,10 +41,10 @@ public class CommentController {
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_UPDATE_COMMENT')")
     public ResponseEntity<?> updateComment(@PathVariable Long id ,
-                                                      @RequestHeader("Authorization") String token,
-                                                   @Valid @RequestBody CommentDTO commentDTO)
+                                           @RequestHeader("Authorization") String token,
+                                           @Valid @RequestBody CommentRequest request)
             {
-            return ResponseConfig.success(commentService.updateComment(token,id,commentDTO),"Thanh cong");
+            return ResponseConfig.success(commentService.updateComment(token,id,request),"Thanh cong");
     }
 
     @DeleteMapping("/delete/{id}")

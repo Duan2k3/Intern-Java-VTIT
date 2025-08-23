@@ -1,7 +1,7 @@
 package com.example.book_web.controller;
 
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.dto.TokenDTO;
+import com.example.book_web.dto.token.TokenDTO;
 import com.example.book_web.dto.user.UserDTO;
 
 import com.example.book_web.entity.User;
@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-
 @RestController
 @RequestMapping("/api/v1/library/user")
 
@@ -40,6 +39,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
+
     @GetMapping("/detail/{id}")
     @Operation(summary = "get-user" , description = "Xem user")
     @PreAuthorize("hasAuthority('ROLE_VIEW_USER')")
@@ -56,9 +56,7 @@ public class UserController {
 
     }
 
-
     @DeleteMapping("/delete/{id}")
-
     @PreAuthorize("hasAuthority('ROLE_DELETE_USER')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
@@ -69,7 +67,7 @@ public class UserController {
 
     @GetMapping("/get-user")
     @PreAuthorize("hasAuthority('ROLE_VIEW_USER')")
-    public ResponseEntity<UserListResponse> getUsersByKeyword(
+    public ResponseEntity<?> getUsersByKeyword(
             @RequestParam(defaultValue = "", required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int limit,
@@ -87,14 +85,14 @@ public class UserController {
                 .map(UserResponseForKeyWord::getUser)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(UserListResponse.builder()
+        UserListResponse userListResponse = UserListResponse.builder()
                 .users(users)
                 .currentPages(userPage.getNumber())
                 .totalPages(userPage.getTotalPages())
-                .build());
+                .build();
+        return ResponseConfig.success(userListResponse,"Thanh cong");
 
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest request){
@@ -117,9 +115,9 @@ public class UserController {
 
     @PostMapping("/logout")
     @Transactional
-    public ResponseEntity<?> logout(@RequestBody TokenDTO token) {
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
 
-        return ResponseConfig.success(userService.logout(token), "Đăng xuất thành công");
+        return ResponseConfig.success(userService.logout(authHeader), "Đăng xuất thành công");
     }
 
     @PostMapping("/active")
@@ -128,7 +126,5 @@ public class UserController {
         userService.ActiveUser( request);
         return ResponseConfig.success(null, "Kích hoạt tài khoản thành công");
     }
-
-
 
 }

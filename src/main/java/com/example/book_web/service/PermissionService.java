@@ -1,6 +1,6 @@
 package com.example.book_web.service;
 
-import com.example.book_web.dto.PermissionDTO;
+import com.example.book_web.dto.permission.PermissionDTO;
 import com.example.book_web.entity.Permission;
 
 import java.util.List;

@@ -82,6 +82,9 @@ public class MessageKeys {
         public static final String POST_ID_NOT_NULL = "comment.comment_post_id_not_null";
         public static final String POST_ID_NOT_BLANK = "comment.comment_post_id_not_blank";
         public static final String USER_ID_NOT_BLANK = "comment.comment_user_id_not_blank";
+        public static final String COMMENT_NOT_FOUND = "comment.comment_not_found";
+        public static final String PARENT_COMMENT_POST_MISMATCH = "comment.parent_comment_post_mismatch";
+        public static final String CAN_NOT_UPDATE_COMMENT_NOT_YOU = "comment.can_not_update_comment_not_you";
 
         private COMMENT() {
         }
@@ -97,6 +100,7 @@ public class MessageKeys {
 
     public static class POST {
         public static final String POST_CONTENT_NOT_BLANK = "post.post_content_not_blank";
+        public static final String POST_NOT_FOUND= "post.post_not_found";
 
         private POST() {
         }

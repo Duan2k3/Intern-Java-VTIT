@@ -1,4 +1,4 @@
-package com.example.book_web.dto;
+package com.example.book_web.dto.user;
 
 import com.example.book_web.utils.MessageKeys;
 import com.fasterxml.jackson.annotation.JsonProperty;

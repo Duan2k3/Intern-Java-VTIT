@@ -1,4 +1,4 @@
-package com.example.book_web.dto;
+package com.example.book_web.dto.role;
 
 import com.example.book_web.entity.Role;
 import lombok.*;

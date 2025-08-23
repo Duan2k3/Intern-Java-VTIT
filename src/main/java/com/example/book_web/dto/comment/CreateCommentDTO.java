@@ -1,4 +1,4 @@
-package com.example.book_web.dto;
+package com.example.book_web.dto.comment;
 
 import com.example.book_web.utils.MessageKeys;
 import jakarta.validation.constraints.NotBlank;
@@ -12,13 +12,11 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class CreateCommentDTO {
-    @NotNull(message = MessageKeys.COMMENT.POST_ID_NOT_BLANK)
     private Long postId;
+
     private Long parentId;
 
-    @NotBlank(message = MessageKeys.COMMENT.USER_ID_NOT_BLANK)
     private Long userId;
 
-    @NotBlank(message = MessageKeys.COMMENT.CONTENT_NOT_BLANK)
     private String content;
 }

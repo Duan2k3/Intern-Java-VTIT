@@ -1,6 +1,6 @@
 package com.example.book_web.service;
 
-import com.example.book_web.dto.TokenDTO;
+import com.example.book_web.dto.token.TokenDTO;
 import com.example.book_web.dto.user.UserDTO;
 import com.example.book_web.entity.User;
 import com.example.book_web.request.user.ActiveUserRequest;
@@ -29,7 +29,7 @@ public interface UserService {
 
     String refreshToken(String token);
 
-    String logout(TokenDTO token) ;
+    String logout(String token) ;
 
     void ActiveUser(ActiveUserRequest request) ;
 }

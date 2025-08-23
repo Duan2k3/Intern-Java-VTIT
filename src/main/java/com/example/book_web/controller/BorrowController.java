@@ -1,7 +1,7 @@
 package com.example.book_web.controller;
 
 import com.example.book_web.common.ResponseConfig;
-import com.example.book_web.dto.ReturnBookDTO;
+import com.example.book_web.dto.borrow.ReturnBookDTO;
 
 
 import com.example.book_web.request.borrow.BorrowRequest;
