@@ -63,6 +63,13 @@ public class MessageKeys {
         private BORROW_HISTORY() {
         }
     }
+    public static class BORROW_DETAIL {
+        public static final String BORROW_DETAIL_ID_NOT_NULL = "borrow_detail.borrow_detail_id_not_null";
+        public static final String BORROW_DETAIL_NOT_EXISTING = "borrow_detail.borrow_detail_not_existing";
+
+        private BORROW_DETAIL() {
+        }
+    }
 
     public static class CATEGORY {
         public static final String CATEGORY_NAME_NOT_BLANK = "category.category_name_not_blank";

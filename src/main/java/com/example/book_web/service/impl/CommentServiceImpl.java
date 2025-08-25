@@ -66,7 +66,6 @@ public class CommentServiceImpl implements CommentService {
                 .post(post)
                 .parent(parentComment)
                 .userId(id)
-
                 .build();
         return commentRepository.save(comment1);
     }

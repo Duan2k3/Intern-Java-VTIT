@@ -6,6 +6,7 @@ import com.example.book_web.common.ResponseConfig;
 
 import com.example.book_web.dto.book.BookDTO;
 import com.example.book_web.dto.book.FilterBookDTO;
+import com.example.book_web.dto.store.TopBorrowedBookDto;
 import com.example.book_web.entity.Book;
 import com.example.book_web.request.book.BookRequest;
 import com.example.book_web.response.*;
@@ -213,5 +214,15 @@ public class BookController {
 
     }
 
+    @GetMapping("/top-borrowed")
+    @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
+    public ResponseEntity<ResponseDto<List<TopBorrowedBookDto>>> getTopBorrowedBooks(
+            @RequestParam(defaultValue = "0") int month,
+            @RequestParam(defaultValue = "0") int year,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+
+        return ResponseConfig.success(bookService.getTopBorrowedBooks(month, year, limit), "Thành công");
+    }
 
 }

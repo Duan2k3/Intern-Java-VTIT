@@ -5,6 +5,7 @@ import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.Exception.FileProcessException;
 import com.example.book_web.common.MessageCommon;
 import com.example.book_web.dto.book.FilterBookDTO;
+import com.example.book_web.dto.store.TopBorrowedBookDto;
 import com.example.book_web.entity.Book;
 import com.example.book_web.dto.book.BookDTO;
 import com.example.book_web.entity.Category;
@@ -16,6 +17,7 @@ import com.example.book_web.service.BookService;
 import com.example.book_web.utils.MessageKeys;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.modelmapper.ModelMapper;
@@ -37,6 +39,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
@@ -52,6 +55,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public BookDTO createBook(BookRequest request) {
+        log.info("Creating book with title: {}", request.getTitle());
         Optional<Book> existing = bookRepository.findBookByTitle(request.getTitle());
         if (existing.isPresent()) {
             throw new DataExistingException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_EXISTING), "400");
@@ -76,7 +80,7 @@ public class BookServiceImpl implements BookService {
                 .quantity(request.getQuantity())
                 .build();
        Book saveBook =  bookRepository.save(book);
-
+        log.info("Book created successfully with ID: {}", saveBook.getId());
         return modelMapper.map(saveBook, BookDTO.class);
 
 
@@ -90,6 +94,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book updateBook(Long id, BookRequest request) {
+        log.info("Updating book with ID: {}", id);
         Optional<Book> existing = bookRepository.findById(id);
         if (existing.isEmpty()) {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST), "400");
@@ -114,6 +119,7 @@ public class BookServiceImpl implements BookService {
         }
         book.setUpdatedAt(LocalDate.now());
         book.setCategories(categories);
+        log.info("Book updated successfully with ID: {}", book.getId());
         return bookRepository.save(book);
 
     }
@@ -124,11 +130,11 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public void deleteBook(Long id) {
-
         Optional<Book> existing = bookRepository.findById(id);
         if (existing.isEmpty()) {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST), "400");
         }
+        log.info("Deleting book with ID: {}", id);
 
         bookRepository.deleteById(id);
     }
@@ -140,6 +146,7 @@ public class BookServiceImpl implements BookService {
      */
     @Override
     public Page<BookResponse> getAllBook(String keyword, PageRequest pageRequest) {
+        log.info("Fetching books with keyword: {}", keyword);
         Page<Book> productsPage;
         productsPage = bookRepository.findByKeyWord(keyword, pageRequest);
         return productsPage.map(BookResponse::getBook);
@@ -165,6 +172,7 @@ public class BookServiceImpl implements BookService {
      */
     @Override
     public Page<Book> getBookByKeyWord(String keyword, Pageable pageable) {
+        log.info("Searching books with keyword: {}", keyword);
         if (keyword == null || keyword.trim().isEmpty()) {
             return bookRepository.findAll(pageable);
         } else {
@@ -179,6 +187,7 @@ public class BookServiceImpl implements BookService {
      */
     @Override
     public BookDTO getById(Long id) {
+        log.info("Fetching book with ID: {}", id);
         Optional<Book> book = bookRepository.findById(id);
         if (book.isEmpty()) {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST), "400");
@@ -190,6 +199,7 @@ public class BookServiceImpl implements BookService {
 
 
     public String storeBookImage(Long bookId, MultipartFile file) throws IOException{
+        log.info("Storing image for book ID: {}", bookId);
         Optional<Book> optionalBook = bookRepository.findById(bookId);
         if (optionalBook.isEmpty()) {
             throw new DataNotFoundException("Không tìm thấy sách với ID: " + bookId, "400");
@@ -226,6 +236,7 @@ public class BookServiceImpl implements BookService {
      */
     @Override
     public byte[] exportBooksToPdf() throws JRException{
+        log.info("Exporting books to PDF report");
         List<Book> books = bookRepository.findAll();
 
         // Load file jrxml từ resources
@@ -250,10 +261,20 @@ public class BookServiceImpl implements BookService {
         return JasperExportManager.exportReportToPdf(jasperPrint);
     }
 
-
-
-
+    /**
+     * @param month
+     * @param year
+     * @param limit
+     * @return
+     */
+    @Override
+    public List<TopBorrowedBookDto> getTopBorrowedBooks(int month, int year, int limit) {
+        log.info("Fetching top {} borrowed books for {}/{}", limit, month, year);
+        return bookRepository.getTopBorrowedBooksByMonth(month, year, limit);
     }
+
+
+}
 
 
 

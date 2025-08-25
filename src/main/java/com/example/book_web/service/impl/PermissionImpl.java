@@ -8,6 +8,7 @@ import com.example.book_web.entity.Role;
 import com.example.book_web.entity.User;
 import com.example.book_web.repository.PermissionRepository;
 import com.example.book_web.repository.UserRepository;
+import com.example.book_web.request.permission.PermissionRequest;
 import com.example.book_web.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -22,45 +23,45 @@ public class PermissionImpl implements PermissionService {
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
     /**
-     * @param permissionDTO
+     * @param request
      * @return
      * @throws Exception
      */
     @Override
-    public Permission createPermission(PermissionDTO permissionDTO)  {
-        Optional<Permission> existingPermission = permissionRepository.findByName(permissionDTO.getName());
+    public PermissionDTO createPermission(PermissionRequest request)  {
+        Optional<Permission> existingPermission = permissionRepository.findByName(request.getName());
         if (existingPermission.isPresent()) {
             throw new DataExistingException("Permission existing","400");
         }
         Permission permission = Permission.builder()
-                .name(permissionDTO.getName())
-                .description(permissionDTO.getDescription())
+                .name(request.getName())
+                .description(request.getDescription())
                 .build();
-       return permissionRepository.save(permission);
+        permissionRepository.save(permission);
+        return modelMapper.map(permission, PermissionDTO.class);
 
     }
 
     /**
 
-     * @param permissionDTO
+     * @param request
      * @return
      */
     @Override
-    public Permission updatePermission( Long id ,PermissionDTO permissionDTO){
+    public PermissionDTO updatePermission( Long id ,PermissionRequest request){
         Optional<Permission> existingPermission = permissionRepository.findById(id);
         if(existingPermission.isEmpty()){
             throw new DataNotFoundException("Permission khong ton tai","400");
         }
-         Optional<Permission> findpermission = permissionRepository.findByName(permissionDTO.getName());
+         Optional<Permission> findpermission = permissionRepository.findByName(request.getName());
         if(findpermission.isPresent()){
             throw new DataNotFoundException("Permission da ton tai","400");
         }
         Permission permission = existingPermission.get();
 
-        modelMapper.map(permissionDTO,permission);
-
-
-       return permissionRepository.save(permission);
+        modelMapper.map(request,permission);
+       permissionRepository.save(permission);
+        return modelMapper.map(permission,PermissionDTO.class);
     }
 
     /**

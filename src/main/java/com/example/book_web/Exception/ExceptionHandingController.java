@@ -95,6 +95,6 @@ public class ExceptionHandingController {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException ex) {
-        return ResponseConfig.error(FORBIDDEN, "403", "Xác thực thất bại: " );
+        return ResponseConfig.error(FORBIDDEN, "403", "Đăng nhập thất bạii: " );
     }
 }

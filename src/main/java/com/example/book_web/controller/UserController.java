@@ -51,8 +51,8 @@ public class UserController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_USER')")
-    public ResponseEntity<?> updateUser( @Valid @RequestBody UserDTO userDto,@PathVariable Long id) {
-        return ResponseConfig.success(userService.updateUser(id,userDto),"Cập nhật thành công");
+    public ResponseEntity<?> updateUser( @Valid @RequestBody UserRequest request,@PathVariable Long id) {
+        return ResponseConfig.success(userService.updateUser(id,request),"Cập nhật thành công");
 
     }
 

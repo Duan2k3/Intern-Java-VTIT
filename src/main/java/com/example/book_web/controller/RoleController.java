@@ -4,6 +4,7 @@ import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.dto.role.RoleDTO;
 import com.example.book_web.entity.Role;
+import com.example.book_web.request.role.RoleRequest;
 import com.example.book_web.response.RoleDetailResponse;
 import com.example.book_web.service.RoleService;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,8 @@ public class RoleController {
     @Transactional
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_ROLE_GROUP')")
-    public ResponseEntity<?> createRole(@RequestBody RoleDTO role) {
-            return ResponseConfig.success(roleService.createRole(role),"Thanh cong");
+    public ResponseEntity<?> createRole(@RequestBody RoleRequest request) {
+            return ResponseConfig.success(roleService.createRole(request),"Thanh cong");
 
     }
 
@@ -40,9 +41,9 @@ public class RoleController {
     @Transactional
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_ROLE_GROUP')")
-    public ResponseEntity<ResponseDto<Role>> updateRole(@PathVariable Long id, @RequestBody RoleDTO role) {
+    public ResponseEntity<ResponseDto<RoleDTO>> updateRole(@PathVariable Long id, @RequestBody RoleRequest request) {
 
-           return ResponseConfig.success(roleService.updateRole(id,role), "Thanh cong");
+           return ResponseConfig.success(roleService.updateRole(id,request), "Thanh cong");
     }
 
 

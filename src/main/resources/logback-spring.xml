@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds">
+
+    <!-- Định nghĩa biến -->
+    <property name="LOG_DIR" value="./logs"/>
+    <property name="APP_NAME" value="${spring.application.name:-my-app}"/>
+
+    <!-- Console Appender -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan(%logger{36}.%M) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender với Rolling (theo ngày) -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- File log chính -->
+        <file>${LOG_DIR}/log.log</file>
+
+        <!-- Chính sách rolling: theo ngày -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- File rotate lưu vào archived -->
+            <fileNamePattern>${LOG_DIR}/archived/log_%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- Giữ tối đa 30 ngày -->
+            <maxHistory>30</maxHistory>
+            <!-- Giới hạn tổng dung lượng -->
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{35}.%M - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Gửi log sang Logstash (tùy chọn, bỏ comment nếu cần) -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <remoteHost>10.60.98.113</remoteHost>
+        <port>8888</port>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app_name":"${APP_NAME}"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- Cấu hình log root -->
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+        <!-- <appender-ref ref="LOGSTASH"/> -->
+    </root>
+
+</configuration>

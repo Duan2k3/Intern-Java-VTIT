@@ -8,10 +8,12 @@ import com.example.book_web.entity.User;
 import com.example.book_web.repository.PermissionRepository;
 import com.example.book_web.repository.RoleRepository;
 import com.example.book_web.repository.UserRepository;
+import com.example.book_web.request.role.RoleRequest;
 import com.example.book_web.response.RoleDetailResponse;
 import com.example.book_web.response.RoleResponse;
 import com.example.book_web.service.RoleService; // Thêm interface
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -39,11 +42,11 @@ public class RoleServiceImpl implements RoleService {
      */
     @Override
     @Transactional
-    public Role createRole(RoleDTO roleCreateRequest) {
-        Role role = roleCreateRequest.getRole();
+    public RoleDTO createRole(RoleRequest request) {
+        Role role = request.getRole();
         roleRepository.save(role);
         List<User> users = new ArrayList<>();
-        for (Long userId : roleCreateRequest.getUserIds()) {
+        for (Long userId : request.getUserIds()) {
             Optional<User> existingUser = userRepository.findById(userId);
             if (existingUser.isEmpty()) {
                 throw new DataNotFoundException("User with ID " + userId + " not found.","400");
@@ -51,7 +54,7 @@ public class RoleServiceImpl implements RoleService {
             users.add(existingUser.get());
         }
        List<Permission> permissions = new ArrayList<>();
-        for (Long permissionId : roleCreateRequest.getPermissionIds()) {
+        for (Long permissionId : request.getPermissionIds()) {
             Optional<Permission> existingPermission = permissionRepository.findById(permissionId);
             if (existingPermission.isEmpty()) {
                 throw new DataNotFoundException("Permission with ID " + permissionId + " not found.","400");
@@ -60,7 +63,8 @@ public class RoleServiceImpl implements RoleService {
         }
         role.setPermissions(permissions);
         role.setUsers(users);
-        return roleRepository.save(role);
+       roleRepository.save(role);
+       return modelMapper.map(role, RoleDTO.class);
     }
 
 
@@ -77,21 +81,21 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public Role updateRole(Long id, RoleDTO role){
+    public RoleDTO updateRole(Long id,RoleRequest request){
         Role existingRole = roleRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Role not found with id: " + id,"400"));
 
 
-        if (role.getRole().getName() != null && !role.getRole().getName().trim().isEmpty()) {
-            if (role.getRole().getName().equals(existingRole.getName()) ) {
-                throw new IllegalStateException("Role name '" +role.getRole().getName() + "' is already taken");
+        if (request.getRole().getName() != null && !request.getRole().getName().trim().isEmpty()) {
+            if (request.getRole().getName().equals(existingRole.getName()) ) {
+                throw new IllegalStateException("Role name '" +request.getRole().getName() + "' is already taken");
             }
-            existingRole.setName(role.getRole().getName());
+            existingRole.setName(request.getRole().getName());
         }
         existingRole.getUsers().clear();
         existingRole.getPermissions().clear();
         List<User> users = new ArrayList<>();
-        for (Long userId : role.getUserIds()) {
+        for (Long userId : request.getUserIds()) {
             Optional<User> existingUser = userRepository.findById(userId);
             if (existingUser.isEmpty()) {
                 throw new DataNotFoundException("User with ID " + userId + " not found.","400");
@@ -99,7 +103,7 @@ public class RoleServiceImpl implements RoleService {
             users.add(existingUser.get());
         }
         List<Permission> permissions = new ArrayList<>();
-        for (Long permissionId : role.getPermissionIds()) {
+        for (Long permissionId : request.getPermissionIds()) {
             Optional<Permission> existingPermission = permissionRepository.findById(permissionId);
             if (existingPermission.isEmpty()) {
                 throw new DataNotFoundException("Permission with ID " + permissionId + " not found.","400");
@@ -109,10 +113,8 @@ public class RoleServiceImpl implements RoleService {
         existingRole.setPermissions(permissions);
         existingRole.setUsers(users);
 
-
-
-
-      return   roleRepository.save(existingRole);
+        roleRepository.save(existingRole);
+        return modelMapper.map(existingRole, RoleDTO.class);
     }
 
     @Override

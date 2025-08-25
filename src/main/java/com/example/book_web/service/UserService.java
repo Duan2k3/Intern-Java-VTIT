@@ -21,7 +21,7 @@ public interface UserService {
      UserResponse userDetail(Long id) ;
      UserDTO createUser(UserRequest request);
 
-     User updateUser(Long id , UserDTO userDTO);
+     UserDTO updateUser(Long id , UserRequest request);
 
     void deleteUser(Long id) ;
 

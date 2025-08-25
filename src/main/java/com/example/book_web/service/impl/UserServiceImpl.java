@@ -132,7 +132,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(Long id ,UserDTO dto) {
+    public UserDTO updateUser(Long id ,UserRequest request) {
 
         Optional<User> existingUser = userRepository.findById(id);
 
@@ -140,13 +140,13 @@ public class UserServiceImpl implements UserService {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER_NOT_EXIST), "400");
         }
         User user = existingUser.get();
-        user.setUsername(dto.getUsername());
-        user.setFullname(dto.getFullname());
-        user.setPhoneNumber(dto.getPhoneNumber());
-        user.setAddress(dto.getAddress());
+        user.setUsername(request.getUsername());
+        user.setFullname(request.getFullname());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setAddress(request.getAddress());
         user.setUpdatedAt(LocalDate.now());
         userRepository.save(user);
-        return modelMapper.map(dto, User.class);
+        return modelMapper.map(request, UserDTO.class);
     }
 
     @Override

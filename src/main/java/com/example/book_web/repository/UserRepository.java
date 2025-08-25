@@ -1,5 +1,4 @@
 package com.example.book_web.repository;
-
 import com.example.book_web.entity.User;
 import com.example.book_web.response.UserResponse;
 import org.springframework.data.domain.Page;
@@ -29,10 +28,6 @@ public interface UserRepository extends JpaRepository<User,Long> {
     Optional<UserResponse> findUserById(@Param("id") Long id);
 
 
-//    @EntityGraph(attributePaths = "roles")
-//    @Query("SELECT u.username FROM User u Where active = 1")
-//    Optional<User> findByUsername(String username) ;
-
     @EntityGraph(attributePaths = "roles")
     @Query("SELECT u FROM User u Where u.active = 1 and u.username = :username")
     Optional<User> findByUsername(@Param("username") String username);
@@ -50,6 +45,5 @@ public interface UserRepository extends JpaRepository<User,Long> {
 
     @Query("SELECT u FROM User u WHERE u.keyActive = :keyActive and u.username = :username")
     Optional<User> findByKeyActive(@Param("keyActive") String keyActive, @Param("username") String username);
-
 
 }

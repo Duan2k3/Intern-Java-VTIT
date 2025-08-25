@@ -21,6 +21,7 @@ import com.example.book_web.request.borrow.ReturnBookRequest;
 import com.example.book_web.service.BorrowService;
 import com.example.book_web.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class BorrowServiceImpl implements BorrowService {
     private final UserRepository userRepository;
@@ -44,6 +46,7 @@ public class BorrowServiceImpl implements BorrowService {
     @Transactional
     @Override
     public BorrowDTO createBorrow(String token , BorrowRequest request)  {
+        log.info("Creating borrow for user with token: {}", token);
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -66,7 +69,7 @@ public class BorrowServiceImpl implements BorrowService {
                     .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST),"400"));
 
             if(book.getQuantity() < d.getQuantity()){
-                throw  new DataNotFoundException("Số lượng sách không đủ","400");
+                throw  new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.QUANTITY_NOT_VALID),"400");
             }
             else {
                 book.setQuantity(book.getQuantity()-d.getQuantity());
@@ -83,12 +86,14 @@ public class BorrowServiceImpl implements BorrowService {
         borrow.setBorrowDetails(details);
 
         borrowRepository.save(borrow);
+        log.info("Borrow created successfully with ID: {}", borrow.getId());
         return modelMapper.map(request,BorrowDTO.class);
     }
 
 
     @Override
     public Borrow updateBorrow(ReturnBookDTO bookDTO)  {
+        log.info("Updating borrow with ID: {}", bookDTO.getId());
         List<BorrowDetail> details = borrowDetailRepository.findByBorrowIdIn(bookDTO.getBorrowDetailIds());
 
         if (details.isEmpty()) {
@@ -129,6 +134,7 @@ public class BorrowServiceImpl implements BorrowService {
      */
     @Override
     public List<Borrow> getAllBorrows() {
+
         List<Borrow> borrows = borrowRepository.findAll();
 
         for (Borrow borrow : borrows) {
@@ -140,7 +146,7 @@ public class BorrowServiceImpl implements BorrowService {
                 }
             }
         }
-
+log.info("Updating borrow statuses if necessary");
         borrowRepository.saveAll(borrows);
         return borrows;
     }
@@ -153,7 +159,7 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     public Borrow getBorrow(Long id) {
         return borrowRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Borrow not found with id: " + id, "404"));
+                .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW.BORROW_NOT_EXISTING) + id, "404"));
     }
 
     /**
@@ -162,13 +168,15 @@ public class BorrowServiceImpl implements BorrowService {
      */
     @Override
     public void deleteBorrow(Long id) {
+        log.info("Deleting borrow with ID: {}", id);
         Borrow borrow = borrowRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Borrow not found with id: " + id, "404"));
+                .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW.BORROW_NOT_EXISTING) + id, "404"));
         borrowRepository.delete(borrow);
     }
 
     @Override
     public List<BorrowDetail> getBorrowHistory1(String token){
+        log.info("Fetching borrow history for user with token: {}", token);
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -191,6 +199,7 @@ public class BorrowServiceImpl implements BorrowService {
      */
     @Override
     public void returnBook(String token ,ReturnBookRequest request) {
+        log.info("Processing return for borrow ID: {}", request.getBorrowId());
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -200,19 +209,19 @@ public class BorrowServiceImpl implements BorrowService {
         Long id = existingUser.getId();
 
         Borrow borrow = borrowRepository.findById(request.getBorrowId())
-                .orElseThrow(() -> new DataNotFoundException("Borrow not found with id: " + request.getBorrowId(), "404"));
+                .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW.BORROW_NOT_EXISTING) + request.getBorrowId(), "404"));
 
         for (Long bookId : request.getBookIds()) {
             BorrowDetail detail = borrowDetailRepository.findByBorrowIdAndBookId(borrow.getId(), bookId)
-                    .orElseThrow(() -> new DataNotFoundException("BorrowDetail not found for borrowId: " + borrow.getId() + " and bookId: " + bookId, "404"));
+                    .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW_DETAIL.BORROW_DETAIL_NOT_EXISTING) + bookId, "404"));
 
             if (detail.getStatus() == BorrowStatus.RETURNED || detail.getStatus() == BorrowStatus.LATE_RETURN) {
-                throw new DataExistingException("Book with ID " + bookId + " has already been returned or is late.", "400");
+                throw new DataExistingException(messageCommon.getMessage(MessageKeys.BORROW_DETAIL.BORROW_DETAIL_NOT_EXISTING) + bookId, "400");
             }
 
             Optional<Book> book = bookRepository.findById(bookId);
             if (book.isEmpty()) {
-                throw new DataNotFoundException("Book not found with id: " + bookId, "404");
+                throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST) + bookId, "400");
             }
             Book existingBook = book.get();
             existingBook.setQuantity(existingBook.getQuantity() + detail.getQuantity());
@@ -235,6 +244,7 @@ public class BorrowServiceImpl implements BorrowService {
      */
     @Override
     public List<InforBorrowDto> getInforBorrow(Long id) {
+        log.info("Fetching borrow history for user ID: {}", id);
         List<InforBorrowDto> list = borrowRepository.getBorrowHistory(id);
         return list;
     }
@@ -252,6 +262,7 @@ public class BorrowServiceImpl implements BorrowService {
         Optional<User>  user = userRepository.findByUsername(name);
         User existingUser = user.get();
         Long userId = existingUser.getId();
+        log.info("Fetching borrow history for user ID: {}", userId);
         List<InforBorrowDto> list = borrowRepository.getBorrowHistory(userId);
         return list;
     }

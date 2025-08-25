@@ -12,6 +12,7 @@ import com.example.book_web.request.category.CategoryRequest;
 import com.example.book_web.service.CategoryService;
 import com.example.book_web.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CategoryServiceImpl implements CategoryService {
        private final CategoryRepository categoryRepository;
        private final MessageCommon messageCommon;
@@ -30,6 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional(readOnly = true)
     public List<Category> getAllCategories() {
+        log.info("Fetching all categories");
         List<Category> categories = categoryRepository.findAll();
         return categories;
     }
@@ -37,6 +40,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDTO createCategory(CategoryRequest request) {
+        log.info("Creating category with name: {}", request.getName());
         Optional<Category> existingCategory = categoryRepository.findCategoryByName(request.getName());
         if(!existingCategory.isEmpty()){
             throw new DataExistingException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NAME_EXISTING),"400" );
@@ -50,6 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDTO updateCategory(Long id , CategoryRequest request)  {
+        log.info("Updating category with id: {}", id);
         Optional<Category> category = categoryRepository.findById(id);
         if(category.isEmpty()){
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST),"400");
@@ -68,6 +73,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(Long id)  {
+        log.info("Deleting category with id: {}", id);
        Optional<Category> category = categoryRepository.findById(id);
        if(category.isEmpty()){
            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NAME_NOT_EXIST),"400");
@@ -82,6 +88,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public List<BookDTO> getCategoryDetail(Long id)  {
+        log.info("Fetching category details for id: {}", id);
         Optional<Category> existing = categoryRepository.findById(id);
         if(existing.isEmpty()){
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST), "400");

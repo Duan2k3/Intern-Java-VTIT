@@ -1,6 +1,7 @@
 package com.example.book_web.repository;
 
 import com.example.book_web.dto.book.FilterBookDTO;
+import com.example.book_web.dto.store.TopBorrowedBookDto;
 import com.example.book_web.entity.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,4 +35,12 @@ public interface BookRepository extends JpaRepository<Book,Long> {
      @Query("SELECT new com.example.book_web.dto.book.FilterBookDTO(b.title, b.authors, b.description, b.quantity, b.image) " +
              "FROM Book b")
      Page<FilterBookDTO> findAllBy(Pageable pageable);
+
+
+     @Query(value = "CALL GetTopBorrowedBooksByMonth(:month, :year, :limit)", nativeQuery = true)
+     List<TopBorrowedBookDto> getTopBorrowedBooksByMonth(
+             @Param("month") int month,
+             @Param("year") int year,
+             @Param("limit") int limit
+     );
 }
