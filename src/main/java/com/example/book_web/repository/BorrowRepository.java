@@ -25,5 +25,8 @@ public interface BorrowRepository extends JpaRepository<Borrow,Long> {
     List<InforBorrowDto> getBorrowHistory(@Param("userId") Long userId);
 
 
+    @Query("SELECT b FROM Borrow b WHERE b.id = :id and b.user.id = :userId")
+    Borrow checkMatch(@Param("id") Long id,@Param("userId") Long userId);
+
 
 }

@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 public interface BorrowService {
     BorrowDTO createBorrow(String token , BorrowRequest request);
-    Borrow updateBorrow( ReturnBookDTO bookDTO) ;
+    BorrowDTO updateBorrow( ReturnBookDTO bookDTO) ;
 
     List<Borrow> getAllBorrows();
     Borrow getBorrow(Long id) ;

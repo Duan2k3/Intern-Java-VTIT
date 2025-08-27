@@ -32,7 +32,6 @@
         </encoder>
     </appender>
 
-    <!-- Gửi log sang Logstash (tùy chọn, bỏ comment nếu cần) -->
     <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <remoteHost>10.60.98.113</remoteHost>
         <port>8888</port>

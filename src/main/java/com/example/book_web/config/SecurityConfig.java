@@ -66,6 +66,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/library/user/login",
                                 "/api/v1/library/user/create").permitAll()
+                        .requestMatchers(("/api/v1/library/user/active")).permitAll()
+                        .requestMatchers(("/api/v1/library/user/logout")).permitAll()
+                        .requestMatchers(("/api/v1/library/user/refresh-token")).permitAll()
                         .requestMatchers("/api/v1/library/categories/statistics/**").permitAll()
                         .requestMatchers("/api/v1/library/books/images/**").permitAll()
                         .requestMatchers("/api/v1/library/like/**").permitAll()

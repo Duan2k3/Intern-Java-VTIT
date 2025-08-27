@@ -17,15 +17,12 @@ import java.util.List;
 @Builder
 public class BorrowDTO {
     @NotNull(message = MessageKeys.BORROW.BORROW_USER_ID_NOT_NULL)
-    @JsonProperty("user_id")
     private Long userId;
 
     @NotNull(message = MessageKeys.BORROW.BORROW_DATE_NOT_NULL)
-    @JsonProperty("borrow_date")
     private LocalDate borrowDate;
 
     @NotNull(message = MessageKeys.BORROW.BORROW_RETURN_DATE_NOT_NULL)
-    @JsonProperty("returned_date")
     private LocalDate returnDate;
 
     private List<BorrowDetailDTO> borrowDetails;

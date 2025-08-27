@@ -58,10 +58,7 @@ public class UserServiceImpl implements UserService {
             );
             User user = userRepository.findByUsername(request.getUsername())
                     .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER.USER_NOT_EXIST), "400"));
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.PASSWORD_NOT_MATCH),"400");
-        }
+            
             String token = jwtService.generateToken(user.getUsername());
         Token tokenEntity = Token.builder()
                 .token(token)

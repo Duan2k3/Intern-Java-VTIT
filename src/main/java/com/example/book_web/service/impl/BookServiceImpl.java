@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +46,7 @@ public class BookServiceImpl implements BookService {
     private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
     private final MessageCommon messageCommon;
-
+    private final BookCacheService bookCacheService;
 
     /**
      * @param request
@@ -56,21 +57,24 @@ public class BookServiceImpl implements BookService {
     @Transactional
     public BookDTO createBook(BookRequest request) {
         log.info("Creating book with title: {}", request.getTitle());
-        Optional<Book> existing = bookRepository.findBookByTitle(request.getTitle());
-        if (existing.isPresent()) {
-            throw new DataExistingException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_EXISTING), "400");
-        }
+
+        bookRepository.findBookByTitle(request.getTitle())
+                .ifPresent(b -> {
+                    throw new DataExistingException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_EXISTING), "400");
+                });
+
         if (request.getQuantity() <= 0) {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.QUANTITY_NOT_VALID), "400");
         }
-        List<Category> categories = new ArrayList<>();
-        for (Long categoryId : request.getCategoriesIds()) {
-            Optional<Category> existingCategory = categoryRepository.findById(categoryId);
-            if (existingCategory.isEmpty()) {
-                throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST), "400");
-            }
-            categories.add(existingCategory.get());
+
+        List<Category> categories = categoryRepository.findAllByIds(request.getCategoriesIds());
+
+        if (categories.size() != request.getCategoriesIds().size()) {
+            throw new DataNotFoundException(
+                    messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST), "400"
+            );
         }
+
         Book book = Book.builder()
                 .categories(categories)
                 .createdAt(LocalDate.now())
@@ -79,11 +83,11 @@ public class BookServiceImpl implements BookService {
                 .description(request.getDescription())
                 .quantity(request.getQuantity())
                 .build();
-       Book saveBook =  bookRepository.save(book);
-        log.info("Book created successfully with ID: {}", saveBook.getId());
-        return modelMapper.map(saveBook, BookDTO.class);
 
+        Book savedBook = bookRepository.save(book);
+        log.info("Book created successfully with ID: {}", savedBook.getId());
 
+        return modelMapper.map(savedBook, BookDTO.class);
     }
 
     /**
@@ -109,13 +113,21 @@ public class BookServiceImpl implements BookService {
         modelMapper.map(request, book);
         book.getCategories().clear();
 
-        List<Category> categories = new ArrayList<>();
-        for (Long categoryId : request.getCategoriesIds()) {
-            Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
-            if (optionalCategory.isEmpty()) {
-                throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST) + categoryId, "400");
-            }
-            categories.add(optionalCategory.get());
+//        List<Category> categories = new ArrayList<>();
+//        for (Long categoryId : request.getCategoriesIds()) {
+//            Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+//            if (optionalCategory.isEmpty()) {
+//                throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST) + categoryId, "400");
+//            }
+//            categories.add(optionalCategory.get());
+//        }
+
+        List<Category> categories = categoryRepository.findAllByIds(request.getCategoriesIds());
+
+        if (categories.size() != request.getCategoriesIds().size()) {
+            throw new DataNotFoundException(
+                    messageCommon.getMessage(MessageKeys.CATEGORY.CATEGORY_NOT_EXIST), "400"
+            );
         }
         book.setUpdatedAt(LocalDate.now());
         book.setCategories(categories);
@@ -242,7 +254,7 @@ public class BookServiceImpl implements BookService {
         // Load file jrxml từ resources
         InputStream reportStream = getClass().getResourceAsStream("/reports/Book.jrxml");
         if (reportStream == null) {
-            throw new RuntimeException("Không tìm thấy file reports/Book.jrxml");
+            throw new DataNotFoundException("Khong tim thay mau export","400");
         }
 
         // Compile report

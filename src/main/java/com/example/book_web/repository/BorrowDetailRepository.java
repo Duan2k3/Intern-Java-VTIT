@@ -25,4 +25,9 @@ public interface BorrowDetailRepository extends JpaRepository<BorrowDetail,Long>
     List<BorrowDetail> findReturnedWithNotification();
 
 
+    @Query("SELECT bd FROM BorrowDetail bd WHERE bd.borrow.id = :borrowId AND bd.book.id IN :bookIds")
+    List<BorrowDetail> findAllByBorrowIdAndBookIds(@Param("borrowId") Long borrowId, @Param("bookIds") List<Long> bookIds);
+
+
+
 }

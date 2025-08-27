@@ -1,63 +1,42 @@
 package com.example.book_web.config;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 @Configuration
 public class RedisConfig {
-    private static final Logger logger = LoggerFactory.getLogger(RedisConfig.class);
-    @Value("${spring.data.redis.host}")
-    private String redisHost;
-
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
 
     @Bean
-    public LettuceConnectionFactory redisConnectionFactory() {
-        logger.info(String.format("redisHost = %s, redisPort = %d", redisHost, redisPort));
-        RedisStandaloneConfiguration configuration =
-                new RedisStandaloneConfiguration(redisHost, redisPort);
-        return new LettuceConnectionFactory(configuration);
-    }
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate()
-
-    {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory());
+        template.setConnectionFactory(connectionFactory);
 
+        // Cấu hình ObjectMapper để hỗ trợ LocalDate, LocalDateTime
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // fix lỗi LocalDate
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        objectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL);
+
+        // Serializer cho value
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        serializer.setObjectMapper(objectMapper);
+
+        // Dùng StringRedisSerializer cho key
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
-
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
+        template.setValueSerializer(serializer);
+        template.setHashValueSerializer(serializer);
+
         template.afterPropertiesSet();
         return template;
     }
-    @Bean
-    public ObjectMapper redisObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ISO_DATE_TIME));
-        module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ISO_DATE_TIME));
-        objectMapper.registerModule(module);
-        return objectMapper;
-    }
 }
-

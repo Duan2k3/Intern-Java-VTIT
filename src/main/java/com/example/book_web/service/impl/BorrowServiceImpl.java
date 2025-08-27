@@ -6,6 +6,7 @@ import com.example.book_web.common.MessageCommon;
 import com.example.book_web.dto.borrow.BorrowDTO;
 import com.example.book_web.dto.borrow.ReturnBookDTO;
 import com.example.book_web.dto.borrow.InforBorrowDto;
+import com.example.book_web.dto.borrow_detail.BorrowDetailDTO;
 import com.example.book_web.entity.Book;
 import com.example.book_web.entity.Borrow;
 import com.example.book_web.entity.BorrowDetail;
@@ -29,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -43,37 +46,45 @@ public class BorrowServiceImpl implements BorrowService {
     private final JwtService jwtService;
     private final MessageCommon messageCommon;
 
+
     @Transactional
     @Override
     public BorrowDTO createBorrow(String token , BorrowRequest request)  {
         log.info("Creating borrow for user with token: {}", token);
+
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
         String name = jwtService.extractUsername(token);
-        Optional<User>  user = userRepository.findByUsername(name);
-        User existingUser = user.get();
-        Long id = existingUser.getId();
-
+        User existingUser = userRepository.findByUsername(name)
+                .orElseThrow(() -> new DataNotFoundException("User not found", "400"));
         Borrow borrow = Borrow.builder()
                 .borrowDate(LocalDate.now())
                 .returnDate(request.getReturnDate())
                 .user(existingUser)
                 .note(request.getNote())
-
                 .build();
+        List<Long> bookIds = request.getBorrowDetails()
+                .stream()
+                .map(BorrowDetailRequest::getBookId)
+                .toList();
+
+        List<Book> books = bookRepository.findAllById(bookIds);
+
+        Map<Long, Book> bookMap = books.stream()
+                .collect(Collectors.toMap(Book::getId, b -> b));
 
         List<BorrowDetail> details = new ArrayList<>();
         for (BorrowDetailRequest d : request.getBorrowDetails()) {
-            Book book = bookRepository.findById(d.getBookId())
-                    .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST),"400"));
+            Book book = bookMap.get(d.getBookId());
+            if (book == null) {
+                throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST),"400");
+            }
+            if (book.getQuantity() < d.getQuantity()) {
+                throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.QUANTITY_NOT_VALID),"400");
+            }
+            book.setQuantity(book.getQuantity() - d.getQuantity());
 
-            if(book.getQuantity() < d.getQuantity()){
-                throw  new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.QUANTITY_NOT_VALID),"400");
-            }
-            else {
-                book.setQuantity(book.getQuantity()-d.getQuantity());
-            }
             BorrowDetail detail = BorrowDetail.builder()
                     .book(book)
                     .quantity(d.getQuantity())
@@ -87,23 +98,43 @@ public class BorrowServiceImpl implements BorrowService {
 
         borrowRepository.save(borrow);
         log.info("Borrow created successfully with ID: {}", borrow.getId());
-        return modelMapper.map(request,BorrowDTO.class);
+
+        BorrowDTO dto = BorrowDTO.builder()
+                .userId(borrow.getUser().getId())
+                .borrowDate(borrow.getBorrowDate())
+                .returnDate(borrow.getReturnDate())
+                .borrowDetails(
+                        borrow.getBorrowDetails().stream()
+                                .map(detail -> BorrowDetailDTO.builder()
+                                        .bookId(detail.getBook().getId())
+                                        .quantity(detail.getQuantity())
+                                        .build()
+                                )
+                                .toList()
+                )
+                .build();
+
+        return dto;
     }
 
 
+
     @Override
-    public Borrow updateBorrow(ReturnBookDTO bookDTO)  {
+    @Transactional
+    public BorrowDTO updateBorrow(ReturnBookDTO bookDTO) {
         log.info("Updating borrow with ID: {}", bookDTO.getId());
+        Borrow borrow = borrowRepository.findById(bookDTO.getId())
+                .orElseThrow(() -> new DataNotFoundException(
+                        messageCommon.getMessage(MessageKeys.BORROW.BORROW_NOT_EXISTING) + bookDTO.getId(), "400"));
         List<BorrowDetail> details = borrowDetailRepository.findByBorrowIdIn(bookDTO.getBorrowDetailIds());
-
         if (details.isEmpty()) {
-            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW_HISTORY.TITLE_NOT_NULL),"400");
+            throw new DataNotFoundException(
+                    messageCommon.getMessage(MessageKeys.BORROW_HISTORY.TITLE_NOT_NULL), "400");
         }
-
         for (BorrowDetail detail : details) {
             detail.setActualReturnedDate(bookDTO.getActualReturnedDate());
 
-            LocalDate expectedReturnDate = detail.getBorrow().getReturnDate();
+            LocalDate expectedReturnDate = borrow.getReturnDate();
             LocalDate actualReturnDate = bookDTO.getActualReturnedDate();
 
             if (actualReturnDate != null) {
@@ -120,14 +151,27 @@ public class BorrowServiceImpl implements BorrowService {
                 }
             }
         }
+
         borrowDetailRepository.saveAll(details);
-        Optional<Borrow> borrowOptional = borrowRepository.findById(bookDTO.getId());
-        if (borrowOptional.isPresent()) {
-            return borrowOptional.get();
-        } else {
-            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW.BORROW_NOT_EXISTING) + bookDTO.getId(),"400");
-        }
+
+        log.info("Borrow updated successfully with ID: {}", borrow.getId());
+
+        return BorrowDTO.builder()
+                .userId(borrow.getUser().getId())
+                .borrowDate(borrow.getBorrowDate())
+                .returnDate(borrow.getReturnDate())
+                .borrowDetails(
+                        borrow.getBorrowDetails().stream()
+                                .map(detail -> BorrowDetailDTO.builder()
+                                        .bookId(detail.getBook().getId())
+                                        .quantity(detail.getQuantity())
+                                        .build()
+                                )
+                                .toList()
+                )
+                .build();
     }
+
 
     /**
      * @return
@@ -198,33 +242,38 @@ log.info("Updating borrow statuses if necessary");
      * @param request
      */
     @Override
+    @Transactional
     public void returnBook(String token ,ReturnBookRequest request) {
         log.info("Processing return for borrow ID: {}", request.getBorrowId());
+
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
         String name = jwtService.extractUsername(token);
-        Optional<User>  user = userRepository.findByUsername(name);
-        User existingUser = user.get();
+        User existingUser = userRepository.findByUsername(name)
+                .orElseThrow(() -> new DataNotFoundException("User not found", "400"));
+
         Long id = existingUser.getId();
 
-        Borrow borrow = borrowRepository.findById(request.getBorrowId())
-                .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW.BORROW_NOT_EXISTING) + request.getBorrowId(), "404"));
+        Borrow borrow= borrowRepository.checkMatch(request.getBorrowId(), id);
+        if (borrow == null) {
+            throw new DataNotFoundException("Phieu muon cua nguoi dung hien tai khong ho le", "404");
+        }
 
-        for (Long bookId : request.getBookIds()) {
-            BorrowDetail detail = borrowDetailRepository.findByBorrowIdAndBookId(borrow.getId(), bookId)
-                    .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW_DETAIL.BORROW_DETAIL_NOT_EXISTING) + bookId, "404"));
+        List<BorrowDetail> details = borrowDetailRepository.findAllByBorrowIdAndBookIds(borrow.getId(), request.getBookIds());
 
+        if (details.size() != request.getBookIds().size()) {
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BORROW.BORROW_NOT_EXISTING), "404");
+        }
+
+        for (BorrowDetail detail : details) {
             if (detail.getStatus() == BorrowStatus.RETURNED || detail.getStatus() == BorrowStatus.LATE_RETURN) {
-                throw new DataExistingException(messageCommon.getMessage(MessageKeys.BORROW_DETAIL.BORROW_DETAIL_NOT_EXISTING) + bookId, "400");
+                throw new DataExistingException(
+                        "Sách đã được trả  " + detail.getBook().getId(), "400");
             }
 
-            Optional<Book> book = bookRepository.findById(bookId);
-            if (book.isEmpty()) {
-                throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_NOT_EXIST) + bookId, "400");
-            }
-            Book existingBook = book.get();
-            existingBook.setQuantity(existingBook.getQuantity() + detail.getQuantity());
+            Book book = detail.getBook();
+            book.setQuantity(book.getQuantity() + detail.getQuantity());
 
             detail.setActualReturnedDate(LocalDate.now());
 
@@ -233,10 +282,11 @@ log.info("Updating borrow statuses if necessary");
             } else {
                 detail.setStatus(BorrowStatus.RETURNED);
             }
-
-            borrowDetailRepository.save(detail);
         }
+
+        borrowDetailRepository.saveAll(details);
     }
+
 
     /**
      * @param id

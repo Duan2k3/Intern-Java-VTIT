@@ -15,9 +15,6 @@ public class BookResponse {
     private String author;
     private String description;
 
-//    @JsonProperty("category_id")
-//    private Long categoryId;
-
     public static BookResponse getBook(Book book){
         BookResponse bookResponse = BookResponse.builder()
                 .author(book.getAuthors())
@@ -27,9 +24,6 @@ public class BookResponse {
                 .build();
 
         return bookResponse;
-
-
-
 
     }
 }

@@ -111,7 +111,7 @@ api:
   prefix: api/v1
 
 jwt:
-  expiration: 2592000 #30 days
+  expiration: 2592000
   secretKey: R3Nj9XO1xOiT5X4B3qlvRMnmrkXo2LbGVYWrlfL1A7U=
 
 # Logging configuration

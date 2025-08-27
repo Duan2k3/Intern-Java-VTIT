@@ -49,7 +49,7 @@ public class MessageKeys {
         public static final String BORROW_USER_ID_NOT_NULL = "borrow.borrow_user_id_not_null";
         public static final String BORROW_DATE_NOT_NULL = "borrow.borrow_date_not_null";
         public static final String BORROW_RETURN_DATE_NOT_NULL = "borrow.borrow_return_date_not_null";
-        public static final String BORROW_NOT_EXISTING = "borrow.borrow_not_existing";
+        public static final String BORROW_NOT_EXISTING = "borrow.borrow_not_existing ";
 
         private BORROW() {
         }
@@ -76,7 +76,7 @@ public class MessageKeys {
         public static final String CATEGORY_DESCRIPTION_NOT_BLANK = "category.category_description_not_blank";
         public static final String CATEGORY_NAME_NOT_EXIST = "category.category_name_not_exist";
         public static final String CATEGORY_NAME_EXISTING = "category.category_name_existing";
-        public static final String CATEGORY_NOT_EXIST = "category.category_not_exist";
+        public static final String CATEGORY_NOT_EXIST = "category.category_not_exist ";
 
         private CATEGORY() {
         }

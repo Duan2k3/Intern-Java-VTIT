@@ -100,7 +100,6 @@ public class UserController {
         }
 
     @PostMapping("/create")
-    @PreAuthorize("hasAuthority('ROLE_CREATE_USER')")
     public ResponseEntity<?> createUser(@Valid @RequestBody UserRequest request) {
            return ResponseConfig.success(userService.createUser(request),"Thanh cong");
 

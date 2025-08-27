@@ -45,21 +45,30 @@ public class RoleServiceImpl implements RoleService {
     public RoleDTO createRole(RoleRequest request) {
         Role role = request.getRole();
         roleRepository.save(role);
-        List<User> users = new ArrayList<>();
-        for (Long userId : request.getUserIds()) {
-            Optional<User> existingUser = userRepository.findById(userId);
-            if (existingUser.isEmpty()) {
-                throw new DataNotFoundException("User with ID " + userId + " not found.","400");
-            }
-            users.add(existingUser.get());
+//        List<User> users = new ArrayList<>();
+//        for (Long userId : request.getUserIds()) {
+//            Optional<User> existingUser = userRepository.findById(userId);
+//            if (existingUser.isEmpty()) {
+//                throw new DataNotFoundException("User with ID " + userId + " not found.","400");
+//            }
+//            users.add(existingUser.get());
+//        }
+
+        List<User> users = userRepository.findAllById(request.getUserIds());
+        if (users.size() != request.getUserIds().size()) {
+            throw new DataNotFoundException("One or more users not found.","400");
         }
-       List<Permission> permissions = new ArrayList<>();
-        for (Long permissionId : request.getPermissionIds()) {
-            Optional<Permission> existingPermission = permissionRepository.findById(permissionId);
-            if (existingPermission.isEmpty()) {
-                throw new DataNotFoundException("Permission with ID " + permissionId + " not found.","400");
-            }
-            permissions.add(existingPermission.get());
+//       List<Permission> permissions = new ArrayList<>();
+//        for (Long permissionId : request.getPermissionIds()) {
+//            Optional<Permission> existingPermission = permissionRepository.findById(permissionId);
+//            if (existingPermission.isEmpty()) {
+//                throw new DataNotFoundException("Permission with ID " + permissionId + " not found.","400");
+//            }
+//            permissions.add(existingPermission.get());
+//        }
+        List<Permission> permissions = permissionRepository.findAllById(request.getPermissionIds());
+        if (permissions.size() != request.getPermissionIds().size()) {
+            throw new DataNotFoundException("One or more permissions not found.","400");
         }
         role.setPermissions(permissions);
         role.setUsers(users);

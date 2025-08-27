@@ -11,7 +11,6 @@ import com.example.book_web.entity.Book;
 import com.example.book_web.request.book.BookRequest;
 import com.example.book_web.response.*;
 import com.example.book_web.service.BookService;
-import com.example.book_web.service.BookServiceRedis;
 import com.example.book_web.service.impl.ExcelExporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,7 +44,6 @@ import java.util.List;
 public class BookController {
     private final BookService bookService;
     private final ExcelExporter excelExporter;
-    private final BookServiceRedis productRedisService;
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ROLE_CREATE_BOOK')")
@@ -101,7 +99,7 @@ public class BookController {
     }
 
     @PostMapping("/import")
-    public ResponseEntity<?> importBooks(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<?> importBooks(@RequestParam("file") MultipartFile file)  {
         try {
             excelExporter.importFromExcel(file);
             return ResponseEntity.ok("Import thành công!");
@@ -110,55 +108,6 @@ public class BookController {
         } catch (Exception ex) {
             return ResponseEntity.status(500).body("Lỗi khi import: " + ex.getMessage());
         }
-    }
-
-
-    @GetMapping("/redis")
-    @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
-    public ResponseEntity<BookListResponse> getProducts(
-            @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "1", name = "category_id") Long categoryId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit
-    ) throws JsonProcessingException {
-        int totalPages = 0;
-        //productRedisService.clear();
-        // Tạo Pageable từ thông tin trang và giới hạn
-        PageRequest pageRequest = PageRequest.of(
-                page, limit,
-                //Sort.by("createdAt").descending()
-                Sort.by("id").ascending()
-        );
-
-        List<BookResponse> productResponses = productRedisService
-                .getAllBook(keyword, categoryId, pageRequest);
-        if (productResponses == null) {
-            Page<BookResponse> productPage = bookService
-                    .getAllBook(keyword, pageRequest);
-
-            totalPages = productPage.getTotalPages();
-            productResponses = productPage.getContent();
-
-            productRedisService.saveAllBooks(
-                    productResponses,
-                    keyword,
-                    categoryId,
-                    pageRequest
-            );
-        }
-        if (productResponses != null) {
-            System.out.println("🔥 Dữ liệu lấy từ Redis");
-        } else {
-            System.out.println("💾 Dữ liệu lấy từ DB vì Redis chưa có");
-
-        }
-
-
-        return ResponseEntity.ok(BookListResponse
-                .builder()
-                .products(productResponses)
-                .totalPages(totalPages)
-                .build());
     }
 
 
