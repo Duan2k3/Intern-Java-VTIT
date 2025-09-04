@@ -3,6 +3,8 @@ package com.example.book_web.service.impl;
 import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.common.MessageCommon;
+import com.example.book_web.dto.book.FilterBookDTO;
+import com.example.book_web.dto.book.PageResponse;
 import com.example.book_web.dto.borrow.BorrowDTO;
 import com.example.book_web.dto.borrow.ReturnBookDTO;
 import com.example.book_web.dto.borrow.InforBorrowDto;
@@ -16,7 +18,9 @@ import com.example.book_web.repository.BookRepository;
 import com.example.book_web.repository.BorrowDetailRepository;
 import com.example.book_web.repository.BorrowRepository;
 import com.example.book_web.repository.UserRepository;
+import com.example.book_web.repository.custom.BorrowCustomRepository;
 import com.example.book_web.request.borrow.BorrowRequest;
+import com.example.book_web.request.borrow.FilterBorrowRequest;
 import com.example.book_web.request.borrow_detail.BorrowDetailRequest;
 import com.example.book_web.request.borrow.ReturnBookRequest;
 import com.example.book_web.service.BorrowService;
@@ -24,6 +28,9 @@ import com.example.book_web.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +52,7 @@ public class BorrowServiceImpl implements BorrowService {
     private final BookRepository bookRepository;
     private final JwtService jwtService;
     private final MessageCommon messageCommon;
+    private final BorrowCustomRepository borrowCustomRepository;
 
 
     @Transactional
@@ -116,8 +124,6 @@ public class BorrowServiceImpl implements BorrowService {
 
         return dto;
     }
-
-
 
     @Override
     @Transactional
@@ -211,6 +217,7 @@ log.info("Updating borrow statuses if necessary");
      * @throws Exception
      */
     @Override
+    @Transactional
     public void deleteBorrow(Long id) {
         log.info("Deleting borrow with ID: {}", id);
         Borrow borrow = borrowRepository.findById(id)
@@ -233,8 +240,6 @@ log.info("Updating borrow statuses if necessary");
        List<BorrowDetail> list = borrowDetailRepository.getBorrowHistory(id);
 
        return list;
-
-
 
     }
 
@@ -292,19 +297,38 @@ log.info("Updating borrow statuses if necessary");
      * @param id
      * @return
      */
-    @Override
-    public List<InforBorrowDto> getInforBorrow(Long id) {
-        log.info("Fetching borrow history for user ID: {}", id);
-        List<InforBorrowDto> list = borrowRepository.getBorrowHistory(id);
-        return list;
-    }
+//    @Override
+//    public List<InforBorrowDto> getInforBorrow(Long id) {
+//        log.info("Fetching borrow history for user ID: {}", id);
+//        List<InforBorrowDto> list = borrowRepository.getBorrowHistory(id);
+//        return list;
+//    }
+//
+//    /**
+//     * @param token
+//     * @return
+//     */
+//    @Override
+//    public List<InforBorrowDto> getHistoryById(String token) {
+//        if (token.startsWith("Bearer ")) {
+//            token = token.substring(7);
+//        }
+//        String name = jwtService.extractUsername(token);
+//        Optional<User>  user = userRepository.findByUsername(name);
+//        User existingUser = user.get();
+//        Long userId = existingUser.getId();
+//        log.info("Fetching borrow history for user ID: {}", userId);
+//        List<InforBorrowDto> list = borrowRepository.getBorrowHistory(userId);
+//        return list;
+//    }
 
     /**
-     * @param token
+     * @param request
+
      * @return
      */
     @Override
-    public List<InforBorrowDto> getHistoryById(String token) {
+    public PageResponse<InforBorrowDto> getList(String token ,FilterBorrowRequest request) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -312,11 +336,21 @@ log.info("Updating borrow statuses if necessary");
         Optional<User>  user = userRepository.findByUsername(name);
         User existingUser = user.get();
         Long userId = existingUser.getId();
-        log.info("Fetching borrow history for user ID: {}", userId);
-        List<InforBorrowDto> list = borrowRepository.getBorrowHistory(userId);
-        return list;
-    }
+        int pageNumber = request.getPageNumber() != null && request.getPageNumber() > 0
+                ? request.getPageNumber() - 1
+                : 0;
+        int pageSize = request.getPageSize() != null ? request.getPageSize() : 10;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<InforBorrowDto> page = borrowCustomRepository.listBorrowHistory(userId,request, pageable);
 
+        return new PageResponse<>(
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalPages(),
+                page.getTotalElements(),
+                page.getContent()
+        );
+    }
 
 }
 

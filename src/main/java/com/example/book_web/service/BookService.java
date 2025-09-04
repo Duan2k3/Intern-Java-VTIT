@@ -1,10 +1,12 @@
 package com.example.book_web.service;
 
 import com.example.book_web.dto.book.FilterBookDTO;
+import com.example.book_web.dto.book.PageResponse;
 import com.example.book_web.dto.store.TopBorrowedBookDto;
 import com.example.book_web.entity.Book;
 import com.example.book_web.dto.book.BookDTO;
 import com.example.book_web.request.book.BookRequest;
+import com.example.book_web.request.book.SearchBookRequest;
 import com.example.book_web.response.BookResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import net.sf.jasperreports.engine.JRException;
@@ -19,7 +21,7 @@ import java.util.List;
 public interface BookService {
     BookDTO createBook(BookRequest request) ;
 
-    Book updateBook( Long id ,BookRequest request) ;
+    BookDTO updateBook( Long id ,BookRequest request) ;
     void deleteBook(Long id) ;
     Page<BookResponse> getAllBook(String keyword  , PageRequest pageRequest);
     void generateExcel(HttpServletResponse servletResponse) ;
@@ -32,4 +34,8 @@ public interface BookService {
     byte[] exportBooksToPdf() throws JRException;
 
     List<TopBorrowedBookDto> getTopBorrowedBooks(int month, int year, int limit);
+
+    PageResponse<FilterBookDTO> searchBook(SearchBookRequest request);
+
+
 }

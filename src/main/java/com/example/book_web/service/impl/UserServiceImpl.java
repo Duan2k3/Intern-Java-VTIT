@@ -3,17 +3,21 @@ package com.example.book_web.service.impl;
 import com.example.book_web.Exception.DataExistingException;
 import com.example.book_web.Exception.DataNotFoundException;
 import com.example.book_web.common.MessageCommon;
+import com.example.book_web.dto.book.FilterBookDTO;
+import com.example.book_web.dto.book.PageResponse;
 import com.example.book_web.dto.token.TokenDTO;
+import com.example.book_web.dto.user.FilterUserDto;
 import com.example.book_web.dto.user.UserDTO;
+import com.example.book_web.entity.NotificationEmail;
 import com.example.book_web.entity.Role;
 import com.example.book_web.entity.Token;
 import com.example.book_web.entity.User;
+import com.example.book_web.repository.NotificationEmailRepository;
 import com.example.book_web.repository.RoleRepository;
 import com.example.book_web.repository.TokenRepository;
 import com.example.book_web.repository.UserRepository;
-import com.example.book_web.request.user.ActiveUserRequest;
-import com.example.book_web.request.user.AuthenticationRequest;
-import com.example.book_web.request.user.UserRequest;
+import com.example.book_web.repository.custom.UserCustomRepository;
+import com.example.book_web.request.user.*;
 import com.example.book_web.response.UserResponse;
 import com.example.book_web.service.UserService;
 import com.example.book_web.utils.MessageKeys;
@@ -21,12 +25,14 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,6 +52,9 @@ public class UserServiceImpl implements UserService {
     private final TokenRepository tokenRepository;
     private final ModelMapper modelMapper;
     private final EmailServiceImpl emailService;
+    private final UserCustomRepository userCustomRepository;
+    private final UserEventPublisher userEventPublisher;
+    private final NotificationEmailRepository notificationEmail;
 
     @Value("${jwt.expiration}")
     private long expiration;
@@ -58,7 +67,7 @@ public class UserServiceImpl implements UserService {
             );
             User user = userRepository.findByUsername(request.getUsername())
                     .orElseThrow(() -> new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER.USER_NOT_EXIST), "400"));
-            
+
             String token = jwtService.generateToken(user.getUsername());
         Token tokenEntity = Token.builder()
                 .token(token)
@@ -82,21 +91,25 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @param id
+     * @param
      * @return
      */
     @Override
-    public UserResponse userDetail(Long id) {
+    public UserDTO userDetail(String token) {
 
-           Optional<UserResponse> user = userRepository.findUserById(id);
-           if (user.isEmpty()){
-             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER_NOT_EXIST), "400");
-           }
-            return user.get();
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String name = jwtService.extractUsername(token);
+        Optional<User>  user = userRepository.findByUsername(name);
+        User existingUser = user.get();
+
+            return modelMapper.map(existingUser,UserDTO.class);
 
     }
 
     @Override
+    @Transactional
     public UserDTO createUser(UserRequest request) {
         if (request.getUsername() == null || request.getUsername().isEmpty()) {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER.USER_IS_NULL), "400");
@@ -120,29 +133,46 @@ public class UserServiceImpl implements UserService {
                 .build();
         user.setKeyActive(UUID.randomUUID().toString());
 
-        userRepository.save(user);
+      User saved =   userRepository.save(user);
 
-        emailService.sendActiveUserNotification(user);
-//        return userRepository.save(user);
+        NotificationEmail job = new NotificationEmail();
+        job.setUserId(saved.getId());
+        job.setType("REGISTER");
+        job.setStatus("PENDING");
+       NotificationEmail saveNotifi =  notificationEmail.save(job);
+
+        userEventPublisher.publishUserRegisteredEvent(saved);
    return modelMapper.map(user,UserDTO.class);
 
     }
 
     @Override
-    public UserDTO updateUser(Long id ,UserRequest request) {
+    @Transactional
+    public UserDTO updateUser(String token , UpdateUserRequest request) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String name = jwtService.extractUsername(token);
+        Optional<User>  user = userRepository.findByUsername(name);
+        User existingUser = user.get();
+        Long id = existingUser.getId();
 
-        Optional<User> existingUser = userRepository.findById(id);
+        Optional<User> checkUser = userRepository.findById(id);
 
-        if (existingUser.isEmpty()) {
+        if (checkUser.isEmpty()) {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER_NOT_EXIST), "400");
         }
-        User user = existingUser.get();
-        user.setUsername(request.getUsername());
-        user.setFullname(request.getFullname());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setAddress(request.getAddress());
-        user.setUpdatedAt(LocalDate.now());
-        userRepository.save(user);
+
+        existingUser.setFullname(request.getFullName());
+        existingUser.setPhoneNumber(request.getPhoneNumber());
+        existingUser.setAddress(request.getAddress());
+        existingUser.setUpdatedAt(LocalDate.now());
+
+        if (!passwordEncoder.matches(request.getOldPassword(),existingUser.getPassword())){
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.USER.PASSWORD_NOT_MATCH),"400");
+        }
+        existingUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(existingUser);
         return modelMapper.map(request, UserDTO.class);
     }
 
@@ -226,6 +256,31 @@ public class UserServiceImpl implements UserService {
         existingUser.setKeyActive(UUID.randomUUID().toString());
         userRepository.save(existingUser);
 
+    }
+
+    /**
+     * @param request
+     * @param
+     * @return
+     */
+    @Override
+    public PageResponse<FilterUserDto> FilterUser(SearchUserRequest request) {
+        int pageNumber = request.getPageNumber() != null && request.getPageNumber() > 0
+                ? request.getPageNumber() - 1
+                : 0;
+        int pageSize = request.getPageSize() != null ? request.getPageSize() : 10;
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+        Page<FilterUserDto> page = userCustomRepository.searchUser(request, pageable);
+
+        return new PageResponse<>(
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalPages(),
+                page.getTotalElements(),
+                page.getContent()
+        );
     }
 
 }

@@ -11,13 +11,12 @@ public class NotificationComponent {
 
     private final NotificationService notificationService;
 
-    // Quét sách quá hạn mỗi ngày lúc 1h sáng
+
     @Scheduled(cron = "0 16 14 * * ?")
     public void scheduleScan() {
         notificationService.scanAndUpdateOverdueBooks();
     }
 
-    // Gửi email mỗi ngày lúc 2h sáng
     @Scheduled(cron = "0 17 14 * * ?")
     public void scheduleSendEmail() {
         notificationService.sendOverdueEmails();

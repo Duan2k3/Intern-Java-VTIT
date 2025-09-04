@@ -1,12 +1,19 @@
 package com.example.book_web.controller;
 
+import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
+import com.example.book_web.dto.book.FilterBookDTO;
+import com.example.book_web.dto.book.PageResponse;
+import com.example.book_web.dto.borrow.InforBorrowDto;
 import com.example.book_web.dto.borrow.ReturnBookDTO;
 
 
+import com.example.book_web.request.book.SearchBookRequest;
 import com.example.book_web.request.borrow.BorrowRequest;
+import com.example.book_web.request.borrow.FilterBorrowRequest;
 import com.example.book_web.request.borrow.ReturnBookRequest;
 import com.example.book_web.service.BorrowService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +49,7 @@ public class BorrowController {
         return ResponseEntity.ok(borrowService.getBorrow(id));
     }
 
-    @DeleteMapping("/{id}")
-    @Transactional
+    @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('ROLE_DELETE_BORROW')")
     public ResponseEntity<?> deleteBorrow(@PathVariable Long id) {
         borrowService.deleteBorrow(id);
@@ -79,15 +85,12 @@ public class BorrowController {
 
     }
 
-    @GetMapping("/infor/{id}")
+    @PostMapping("/history-by-id")
     @PreAuthorize("hasAuthority('ROLE_VIEW_BORROW')")
-    public ResponseEntity<?> getInforBorrow(@PathVariable Long id) {
-        return ResponseConfig.success(borrowService.getInforBorrow(id), "Thanh cong");
-    }
-
-    @GetMapping("/history-by-id")
-    @PreAuthorize("hasAuthority('ROLE_CREATE_BORROW')")
-    public ResponseEntity<?> getHistoryById(@RequestHeader("Authorization") String authHeader) {
-        return ResponseConfig.success(borrowService.getHistoryById(authHeader), "Thanh cong");
+    public ResponseEntity<ResponseDto<PageResponse<InforBorrowDto>>> searchProgram(
+            HttpServletRequest httpServletRequest,
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody FilterBorrowRequest request) {
+        return ResponseConfig.success(borrowService.getList(authHeader,request), "Thanh cong");
     }
 }

@@ -1,5 +1,7 @@
 package com.example.book_web.dto.book;
 
+import com.example.book_web.dto.category.CategoryDTO;
+import com.example.book_web.entity.Category;
 import lombok.*;
 
 import java.util.List;

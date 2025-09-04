@@ -15,18 +15,11 @@ import java.util.List;
 @Repository
 public interface BorrowRepository extends JpaRepository<Borrow,Long> {
 
-    @Query("SELECT new com.example.book_web.dto.borrow.InforBorrowDto(" +
-            "bk.id, bk.title, bk.authors, bd.quantity, u.email, u.username,bd.status) " +
-            "FROM Borrow b " +
-            "JOIN b.borrowDetails bd " +
-            "JOIN bd.book bk " +
-            "JOIN b.user u " +
-            "WHERE u.id = :userId")
-    List<InforBorrowDto> getBorrowHistory(@Param("userId") Long userId);
-
-
     @Query("SELECT b FROM Borrow b WHERE b.id = :id and b.user.id = :userId")
     Borrow checkMatch(@Param("id") Long id,@Param("userId") Long userId);
+
+    @Query("SELECT b FROM Borrow  b Where b.id = :borrowId ")
+    void deleteByBorrowId(@Param("borrowId") Long borrowId);
 
 
 }

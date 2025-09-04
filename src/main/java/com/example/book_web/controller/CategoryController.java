@@ -4,6 +4,7 @@ import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
 import com.example.book_web.dto.book.BookDTO;
 
+import com.example.book_web.entity.Category;
 import com.example.book_web.request.category.CategoryRequest;
 import com.example.book_web.service.CategoryService;
 import jakarta.validation.Valid;
@@ -54,6 +55,13 @@ public class CategoryController {
     @PreAuthorize("hasAuthority('ROLE_VIEW_CATEGORY')")
     public ResponseEntity<ResponseDto<List<BookDTO>>> detailCategory(@PathVariable Long id) {
         return ResponseConfig.success(categoryService.getCategoryDetail(id), "Thanh cong");
+
+    }
+
+    @GetMapping("/get-categories/{id}")
+    @PreAuthorize("hasAuthority('ROLE_VIEW_CATEGORY')")
+    public ResponseEntity<ResponseDto<List<Category>>> getCategories(@PathVariable Long id){
+        return ResponseConfig.success(categoryService.getCategoriesByBookId(id),"Thanh cong");
 
     }
 

@@ -26,7 +26,11 @@ public class MessageKeys {
         public static final String USER_EXISTING = "user.user_existing";
         public static final String USER_IS_NULL = "user.user_is_null";
         public static final String USER_KEY_ACTIVE_NOT_BLANK = "user.user_key_active_not_blank";
-
+        public static final String PHONE_NUMBER_INVALID= "user.phone_number_invalid";
+        public static final String AGE_NOT_INVALID = "user.age_not_invalid";
+        public static final String FULLNAME_TOO_LONG = "user.full_name_too_long";
+        public static final String USERNAME_TOO_LONG ="user.username_too_long";
+        public static final String PASSWORD_NOT_MATCH = "user.password_not_match";
         private USER() {
         }
     }
@@ -40,6 +44,10 @@ public class MessageKeys {
         public static final String BOOK_EXISTING = "book.book_existing";
         public static final String BOOK_NOT_EXIST = "book.book_not_exist";
         public static final String QUANTITY_NOT_VALID = "book.quantity_not_valid";
+        public static final String QUANTITY_NOT_SMALLER_1= "book.quantity_not_smaller_1";
+        public static final String BOOK_TITLE_NOT_TOO_LONG = "book.book_title_not_too_long";
+        public static final String BOOK_AUTHOR_NOT_TOO_LONG = "book.book_author_not_too_long";
+        public static final String BOOK_DESCRIPTION_TOO_LONG = "book.book_description_too_long";
 
         private BOOK() {
         }
@@ -77,6 +85,7 @@ public class MessageKeys {
         public static final String CATEGORY_NAME_NOT_EXIST = "category.category_name_not_exist";
         public static final String CATEGORY_NAME_EXISTING = "category.category_name_existing";
         public static final String CATEGORY_NOT_EXIST = "category.category_not_exist ";
+        public static final String CATEGORY_NAME_TOO_LONG = "category.category_name_too_long";
 
         private CATEGORY() {
         }
@@ -118,6 +127,17 @@ public class MessageKeys {
         public static final String TOKEN_EXPIRED =  "token.token_expired";
         public static final String LOGOUT_SUCCESS = "token.logout_success";
         private TOKEN() {
+        }
+    }
+    public static class PERMISSION {
+        public static final String PERMISSION_DESCRIPTION_NOT_BLANK = "permission.permission_description_not_blank";
+        public static final String PERMISSION_NOT_EXIST = "permission.permission_not_exist";
+        public static final String PERMISSION_DESCRIPTION_TOO_LONG = "permission.permission_description_too_long";
+        public static final String PERMISSION_NAME_EXISTING = "permission.permission_name_existing";
+        public static final String PERMISSION_NAME_NOT_BLANK = "permission.permission_name_not_blank";
+        public static final String PERMISSION_NAME_TOO_LONG = "permission.permission_name_too_long";
+
+        private PERMISSION() {
         }
     }
 }

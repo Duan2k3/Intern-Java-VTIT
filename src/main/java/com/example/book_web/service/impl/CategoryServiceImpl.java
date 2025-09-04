@@ -30,7 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
        private final ModelMapper modelMapper;
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<Category> getAllCategories() {
         log.info("Fetching all categories");
         List<Category> categories = categoryRepository.findAll();
@@ -39,6 +39,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
+    @Transactional
     public CategoryDTO createCategory(CategoryRequest request) {
         log.info("Creating category with name: {}", request.getName());
         Optional<Category> existingCategory = categoryRepository.findCategoryByName(request.getName());
@@ -53,6 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public CategoryDTO updateCategory(Long id , CategoryRequest request)  {
         log.info("Updating category with id: {}", id);
         Optional<Category> category = categoryRepository.findById(id);
@@ -72,6 +74,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public void deleteCategory(Long id)  {
         log.info("Deleting category with id: {}", id);
        Optional<Category> category = categoryRepository.findById(id);
@@ -110,5 +113,10 @@ public class CategoryServiceImpl implements CategoryService {
                         .build())
                 .collect(Collectors.toList());
 
+    }
+
+    @Override
+    public List<Category> getCategoriesByBookId(Long id) {
+        return categoryRepository.findCategoriesByBookId(id);
     }
 }

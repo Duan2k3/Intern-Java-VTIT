@@ -46,4 +46,5 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @Query("SELECT u FROM User u WHERE u.keyActive = :keyActive and u.username = :username")
     Optional<User> findByKeyActive(@Param("keyActive") String keyActive, @Param("username") String username);
 
+
 }

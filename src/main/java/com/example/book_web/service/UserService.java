@@ -1,11 +1,10 @@
 package com.example.book_web.service;
 
+import com.example.book_web.dto.book.PageResponse;
 import com.example.book_web.dto.token.TokenDTO;
 import com.example.book_web.dto.user.UserDTO;
 import com.example.book_web.entity.User;
-import com.example.book_web.request.user.ActiveUserRequest;
-import com.example.book_web.request.user.AuthenticationRequest;
-import com.example.book_web.request.user.UserRequest;
+import com.example.book_web.request.user.*;
 import com.example.book_web.response.UserResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,10 +17,10 @@ public interface UserService {
     String login(AuthenticationRequest request) ;
 
      List<UserResponse> getAllUsers();
-     UserResponse userDetail(Long id) ;
+     UserDTO userDetail(String token) ;
      UserDTO createUser(UserRequest request);
 
-     UserDTO updateUser(Long id , UserRequest request);
+     UserDTO updateUser(String token , UpdateUserRequest request);
 
     void deleteUser(Long id) ;
 
@@ -32,4 +31,6 @@ public interface UserService {
     String logout(String token) ;
 
     void ActiveUser(ActiveUserRequest request) ;
+
+    PageResponse FilterUser(SearchUserRequest request );
 }

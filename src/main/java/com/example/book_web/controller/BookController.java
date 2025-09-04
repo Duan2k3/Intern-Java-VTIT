@@ -6,14 +6,17 @@ import com.example.book_web.common.ResponseConfig;
 
 import com.example.book_web.dto.book.BookDTO;
 import com.example.book_web.dto.book.FilterBookDTO;
+import com.example.book_web.dto.book.PageResponse;
 import com.example.book_web.dto.store.TopBorrowedBookDto;
 import com.example.book_web.entity.Book;
 import com.example.book_web.request.book.BookRequest;
+import com.example.book_web.request.book.SearchBookRequest;
 import com.example.book_web.response.*;
 import com.example.book_web.service.BookService;
 import com.example.book_web.service.impl.ExcelExporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -85,7 +88,6 @@ public class BookController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir
     ) {
-
         Sort sort = sortDir.equalsIgnoreCase("desc") ?
                 Sort.by(sortBy).descending() :
                 Sort.by(sortBy).ascending();
@@ -172,6 +174,15 @@ public class BookController {
     ) {
 
         return ResponseConfig.success(bookService.getTopBorrowedBooks(month, year, limit), "Thành công");
+    }
+
+
+    @PostMapping ("/search-list")
+    @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
+    public ResponseEntity<ResponseDto<PageResponse<FilterBookDTO>>> searchProgram(
+            HttpServletRequest httpServletRequest,
+            @RequestBody SearchBookRequest request) {
+        return ResponseConfig.success(bookService.searchBook(request), "Thanh cong");
     }
 
 }

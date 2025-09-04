@@ -1,15 +1,16 @@
 package com.example.book_web.controller;
 
+import com.example.book_web.Base.ResponseDto;
 import com.example.book_web.common.ResponseConfig;
+import com.example.book_web.dto.book.FilterBookDTO;
+import com.example.book_web.dto.book.PageResponse;
 import com.example.book_web.dto.token.TokenDTO;
+import com.example.book_web.dto.user.FilterUserDto;
 import com.example.book_web.dto.user.UserDTO;
 
 import com.example.book_web.entity.User;
 import com.example.book_web.repository.UserRepository;
-import com.example.book_web.request.user.ActiveUserRequest;
-import com.example.book_web.request.user.AuthenticationRequest;
-import com.example.book_web.request.user.UserListResponse;
-import com.example.book_web.request.user.UserRequest;
+import com.example.book_web.request.user.*;
 import com.example.book_web.response.*;
 import com.example.book_web.service.UserService;
 import com.example.book_web.service.impl.JwtService;
@@ -40,19 +41,19 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
 
-    @GetMapping("/detail/{id}")
+    @GetMapping("/detail")
     @Operation(summary = "get-user" , description = "Xem user")
     @PreAuthorize("hasAuthority('ROLE_VIEW_USER')")
-    public ResponseEntity<?> getUserDetail(@PathVariable Long id) {
-            UserResponse user = userService.userDetail(id) ;
-            return ResponseConfig.success(user);
+    public ResponseEntity<?> getUserDetail(@RequestHeader("Authorization") String authHeader) {
+
+            return ResponseConfig.success(userService.userDetail(authHeader),"Thanh cong");
 
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_UPDATE_USER')")
-    public ResponseEntity<?> updateUser( @Valid @RequestBody UserRequest request,@PathVariable Long id) {
-        return ResponseConfig.success(userService.updateUser(id,request),"Cập nhật thành công");
+    public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String authHeader, @RequestBody UpdateUserRequest request) {
+        return ResponseConfig.success(userService.updateUser(authHeader,request),"Cập nhật thành công");
 
     }
 
@@ -120,10 +121,16 @@ public class UserController {
     }
 
     @PostMapping("/active")
-    @Transactional
     public ResponseEntity<?> activeUser(@RequestBody ActiveUserRequest request) {
         userService.ActiveUser( request);
         return ResponseConfig.success(null, "Kích hoạt tài khoản thành công");
+    }
+
+    @PostMapping("/filter")
+    @PreAuthorize("hasAuthority('ROLE_VIEW_LIST_USER')")
+    public ResponseEntity<ResponseDto<PageResponse<FilterUserDto>>> getUser(@RequestBody SearchUserRequest request){
+        return ResponseConfig.success(userService.FilterUser(request),"Thanh cong");
+
     }
 
 }

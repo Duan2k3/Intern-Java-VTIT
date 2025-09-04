@@ -3,32 +3,39 @@
 	<field name="title" class="java.lang.String"/>
 	<field name="description" class="java.lang.String"/>
 	<field name="quantity" class="java.lang.Integer"/>
+	<field name="createdAt" class="java.util.Date"/>
 	<title height="50">
 		<element kind="staticText" uuid="c9099779-aa6f-466d-8c3a-82774384a752" x="0" y="0" width="555" height="30" fontSize="18.0" bold="true" hTextAlign="Center">
 			<text><![CDATA[Danh sách sách]]></text>
 		</element>
 	</title>
-	<columnHeader height="20">
-		<element kind="textField" uuid="bcb708f1-779a-41fe-bf49-8507229f20fb" x="0" y="0" width="200" height="20">
+	<columnHeader height="25">
+		<element kind="textField" uuid="bcb708f1-779a-41fe-bf49-8507229f20fb" x="0" y="0" width="130" height="20">
 			<expression><![CDATA["Tiêu đề"]]></expression>
 		</element>
-		<element kind="textField" uuid="9aa37fa7-5792-4ad5-b80c-6b0658323c17" x="200" y="0" width="200" height="20">
+		<element kind="textField" uuid="9aa37fa7-5792-4ad5-b80c-6b0658323c17" x="150" y="0" width="160" height="20">
 			<expression><![CDATA["Mô tả"]]></expression>
 		</element>
-		<element kind="textField" uuid="ed149383-c32e-4605-a760-b70626e6d930" x="400" y="0" width="100" height="20">
+		<element kind="textField" uuid="ed149383-c32e-4605-a760-b70626e6d930" x="330" y="0" width="100" height="20">
 			<expression><![CDATA["Số lượng"]]></expression>
+		</element>
+		<element kind="textField" uuid="9d4eebd6-72df-48ae-abc7-9a7abe7c529f" x="460" y="2" width="100" height="20">
+			<expression><![CDATA["Ngày tạo"]]></expression>
 		</element>
 	</columnHeader>
 	<detail>
-		<band height="20">
-			<element kind="textField" uuid="f1df64a5-9f8f-4d7a-8b0e-0250636a918c" x="0" y="0" width="200" height="20">
+		<band height="60">
+			<element kind="textField" uuid="f1df64a5-9f8f-4d7a-8b0e-0250636a918c" x="0" y="0" width="130" height="20">
 				<expression><![CDATA[$F{title}]]></expression>
 			</element>
-			<element kind="textField" uuid="65eda830-9f90-430b-acb1-055ebadf9824" x="200" y="0" width="200" height="20">
+			<element kind="textField" uuid="65eda830-9f90-430b-acb1-055ebadf9824" x="150" y="0" width="160" height="20">
 				<expression><![CDATA[$F{description}]]></expression>
 			</element>
-			<element kind="textField" uuid="dff739f4-2ddc-48a1-8977-6c568d608c39" x="400" y="0" width="100" height="20">
+			<element kind="textField" uuid="dff739f4-2ddc-48a1-8977-6c568d608c39" x="330" y="0" width="100" height="20">
 				<expression><![CDATA[$F{quantity}]]></expression>
+			</element>
+			<element kind="textField" uuid="1bd55337-f63e-4c70-b09e-4ac75220668e" x="455" y="0" width="100" height="20">
+				<expression><![CDATA[$F{createdAt}]]></expression>
 			</element>
 		</band>
 	</detail>
