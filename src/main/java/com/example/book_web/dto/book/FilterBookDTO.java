@@ -1,9 +1,15 @@
 package com.example.book_web.dto.book;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -15,6 +21,7 @@ public class FilterBookDTO {
     private String description;
     private Integer quantity;
     private String image;
+
     private Integer totalCount;
 
     public FilterBookDTO(Long id ,String title, String author, String description, Integer quantity, String image) {
@@ -24,6 +31,7 @@ public class FilterBookDTO {
         this.description = description;
         this.quantity = quantity;
         this.image = image;
+
     }
 
 }

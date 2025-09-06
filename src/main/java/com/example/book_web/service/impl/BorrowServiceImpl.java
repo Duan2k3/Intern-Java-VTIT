@@ -31,15 +31,14 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.DataFormatException;
 
 @Service
 @Slf4j
@@ -53,6 +52,8 @@ public class BorrowServiceImpl implements BorrowService {
     private final JwtService jwtService;
     private final MessageCommon messageCommon;
     private final BorrowCustomRepository borrowCustomRepository;
+    private static final String BOOK_CACHE_KEY = "books";
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
     @Transactional
@@ -66,6 +67,9 @@ public class BorrowServiceImpl implements BorrowService {
         String name = jwtService.extractUsername(token);
         User existingUser = userRepository.findByUsername(name)
                 .orElseThrow(() -> new DataNotFoundException("User not found", "400"));
+        if (request.getReturnDate().isBefore(LocalDate.now())) {
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_RETURNED_BEFORE_NOW), "400");
+        }
         Borrow borrow = Borrow.builder()
                 .borrowDate(LocalDate.now())
                 .returnDate(request.getReturnDate())
@@ -107,6 +111,7 @@ public class BorrowServiceImpl implements BorrowService {
         borrowRepository.save(borrow);
         log.info("Borrow created successfully with ID: {}", borrow.getId());
 
+
         BorrowDTO dto = BorrowDTO.builder()
                 .userId(borrow.getUser().getId())
                 .borrowDate(borrow.getBorrowDate())
@@ -121,62 +126,11 @@ public class BorrowServiceImpl implements BorrowService {
                                 .toList()
                 )
                 .build();
+        clearBookCache();
 
         return dto;
     }
 
-    @Override
-    @Transactional
-    public BorrowDTO updateBorrow(ReturnBookDTO bookDTO) {
-        log.info("Updating borrow with ID: {}", bookDTO.getId());
-        Borrow borrow = borrowRepository.findById(bookDTO.getId())
-                .orElseThrow(() -> new DataNotFoundException(
-                        messageCommon.getMessage(MessageKeys.BORROW.BORROW_NOT_EXISTING) + bookDTO.getId(), "400"));
-        List<BorrowDetail> details = borrowDetailRepository.findByBorrowIdIn(bookDTO.getBorrowDetailIds());
-        if (details.isEmpty()) {
-            throw new DataNotFoundException(
-                    messageCommon.getMessage(MessageKeys.BORROW_HISTORY.TITLE_NOT_NULL), "400");
-        }
-        for (BorrowDetail detail : details) {
-            detail.setActualReturnedDate(bookDTO.getActualReturnedDate());
-
-            LocalDate expectedReturnDate = borrow.getReturnDate();
-            LocalDate actualReturnDate = bookDTO.getActualReturnedDate();
-
-            if (actualReturnDate != null) {
-                if (actualReturnDate.isAfter(expectedReturnDate)) {
-                    detail.setStatus(BorrowStatus.LATE_RETURN);
-                } else {
-                    detail.setStatus(BorrowStatus.RETURNED);
-                }
-            } else {
-                if (LocalDate.now().isAfter(expectedReturnDate)) {
-                    detail.setStatus(BorrowStatus.OVERDUE);
-                } else {
-                    detail.setStatus(BorrowStatus.NOT_RETURNED);
-                }
-            }
-        }
-
-        borrowDetailRepository.saveAll(details);
-
-        log.info("Borrow updated successfully with ID: {}", borrow.getId());
-
-        return BorrowDTO.builder()
-                .userId(borrow.getUser().getId())
-                .borrowDate(borrow.getBorrowDate())
-                .returnDate(borrow.getReturnDate())
-                .borrowDetails(
-                        borrow.getBorrowDetails().stream()
-                                .map(detail -> BorrowDetailDTO.builder()
-                                        .bookId(detail.getBook().getId())
-                                        .quantity(detail.getQuantity())
-                                        .build()
-                                )
-                                .toList()
-                )
-                .build();
-    }
 
 
     /**
@@ -200,12 +154,6 @@ log.info("Updating borrow statuses if necessary");
         borrowRepository.saveAll(borrows);
         return borrows;
     }
-
-    /**
-     * @param id
-     * @return
-     * @throws Exception
-     */
     @Override
     public Borrow getBorrow(Long id) {
         return borrowRepository.findById(id)
@@ -274,7 +222,7 @@ log.info("Updating borrow statuses if necessary");
         for (BorrowDetail detail : details) {
             if (detail.getStatus() == BorrowStatus.RETURNED || detail.getStatus() == BorrowStatus.LATE_RETURN) {
                 throw new DataExistingException(
-                        "Sách đã được trả  " + detail.getBook().getId(), "400");
+                        "Sách đã được trả  " + detail.getBook().getTitle(), "200");
             }
 
             Book book = detail.getBook();
@@ -288,6 +236,8 @@ log.info("Updating borrow statuses if necessary");
                 detail.setStatus(BorrowStatus.RETURNED);
             }
         }
+
+        clearBookCache();
 
         borrowDetailRepository.saveAll(details);
     }
@@ -350,6 +300,16 @@ log.info("Updating borrow statuses if necessary");
                 page.getTotalElements(),
                 page.getContent()
         );
+    }
+
+    private void clearBookCache() {
+        Set<String> keys = redisTemplate.keys(BOOK_CACHE_KEY + "*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+            log.info("Cleared {} book cache entries", keys.size());
+        } else {
+            log.info("No book cache entries found to clear");
+        }
     }
 
 }

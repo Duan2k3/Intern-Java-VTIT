@@ -135,12 +135,6 @@ public class UserServiceImpl implements UserService {
 
       User saved =   userRepository.save(user);
 
-        NotificationEmail job = new NotificationEmail();
-        job.setUserId(saved.getId());
-        job.setType("REGISTER");
-        job.setStatus("PENDING");
-       NotificationEmail saveNotifi =  notificationEmail.save(job);
-
         userEventPublisher.publishUserRegisteredEvent(saved);
    return modelMapper.map(user,UserDTO.class);
 

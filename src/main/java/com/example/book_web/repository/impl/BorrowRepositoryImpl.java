@@ -42,7 +42,7 @@ public class BorrowRepositoryImpl implements BorrowCustomRepository {
     }
 
     private void getBorrowCommon(Long id ,StringBuilder sqlBuilder, FilterBorrowRequest request,  Map<String, Object> mapParams){
-        sqlBuilder.append("SELECT bk.ID, bk.TITLE, bk.AUTHOR, bd.QUANTITY, u.EMAIL, u.USER_NAME, bd.STATUS \n");
+        sqlBuilder.append("SELECT bk.ID, bk.TITLE, bk.AUTHOR, bd.QUANTITY, u.EMAIL, u.USER_NAME, bd.STATUS ,bd.BORROW_ID\n");
         sqlBuilder.append(", COUNT(1) OVER(PARTITION BY 1) total_count \n");
         sqlBuilder.append("FROM Borrows b ");
         sqlBuilder.append("JOIN borrow_detail bd on b.id = bd.borrow_id  ");
@@ -51,10 +51,10 @@ public class BorrowRepositoryImpl implements BorrowCustomRepository {
         sqlBuilder.append("WHERE u.active = 1 ");
         SqlNativeUtils.findWord(sqlBuilder,request.getTitle(),mapParams,"bk.TITLE");
         SqlNativeUtils.findWord(sqlBuilder,request.getAuthor(),mapParams,"bk.AUTHOR");
-        SqlNativeUtils.findWord(sqlBuilder,request.getEmail(),mapParams,"bk.QUANTITY");
-        SqlNativeUtils.findWord(sqlBuilder,request.getUsername(),mapParams,"u.EMAIL");
+        SqlNativeUtils.findWord(sqlBuilder,request.getEmail(),mapParams,"bk.EMAIL");
+        SqlNativeUtils.findWord(sqlBuilder,request.getUsername(),mapParams,"u.USER_NAME");
         SqlNativeUtils.findEqual(sqlBuilder, id, mapParams, "u.id", "userId");
-        sqlBuilder.append("ORDER BY bk.id ASC");
+        sqlBuilder.append("ORDER BY bd.borrow_id ASC");
 
     }
 }

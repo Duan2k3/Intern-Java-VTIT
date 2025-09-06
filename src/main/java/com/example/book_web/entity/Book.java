@@ -42,6 +42,10 @@ public class Book {
 
     @Column(name = "updated_at")
     private LocalDate updatedAt;
+
+    @Column(name = "publish_date")
+    private Date publishDate;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDate.now();

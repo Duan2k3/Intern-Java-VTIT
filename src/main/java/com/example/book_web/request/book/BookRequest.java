@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 
@@ -27,6 +30,10 @@ public class BookRequest {
     @NotBlank(message = MessageKeys.BOOK.BOOK_DESCRIPTION_NOT_BLANK)
     @Size(max = 500, message = MessageKeys.BOOK.BOOK_DESCRIPTION_TOO_LONG)
     private String description;
+
+
+    @NotNull(message = MessageKeys.BOOK.BOOK_PULISH_DATE_NOT_BLANK)
+    private Date publishDate;
 
     private List<Long> categoriesIds;
 }

@@ -13,7 +13,6 @@ public class UserEventPublisher {
 
     public void publishUserRegisteredEvent(User user) {
         UserRegisteredEvent event = new UserRegisteredEvent(
-
                 user.getEmail(),
                 user.getUsername(),
                 user.getKeyActive()

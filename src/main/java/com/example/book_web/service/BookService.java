@@ -37,5 +37,5 @@ public interface BookService {
 
     PageResponse<FilterBookDTO> searchBook(SearchBookRequest request);
 
-
+    byte[] exportBooksToPdfWithFilter(SearchBookRequest request) throws JRException;
 }

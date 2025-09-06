@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.DataFormatException;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -95,6 +96,11 @@ public class ExceptionHandingController {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException ex) {
+        return ResponseConfig.error(FORBIDDEN, "403", "Đăng nhập thất bạii: " );
+    }
+
+    @ExceptionHandler(DataFormatException.class)
+    public ResponseEntity<String> handleFormatException(AuthenticationException ex) {
         return ResponseConfig.error(FORBIDDEN, "403", "Đăng nhập thất bạii: " );
     }
 }

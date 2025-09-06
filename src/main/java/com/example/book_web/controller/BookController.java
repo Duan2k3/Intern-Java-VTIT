@@ -185,4 +185,15 @@ public class BookController {
         return ResponseConfig.success(bookService.searchBook(request), "Thanh cong");
     }
 
+    @PostMapping("/export/pdf-filter")
+    @PreAuthorize("hasAuthority('ROLE_VIEW_BOOK')")
+    public ResponseEntity<?> exportBooksFilter(@RequestBody SearchBookRequest request)throws JRException {
+        byte[] pdf = bookService.exportBooksToPdfWithFilter(request);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=books.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+
+    }
+
 }

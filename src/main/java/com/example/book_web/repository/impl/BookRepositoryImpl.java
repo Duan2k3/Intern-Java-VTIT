@@ -38,7 +38,7 @@ public class BookRepositoryImpl implements BookCustomRepository {
 
     }
     private void bookSearchCommon(StringBuilder sqlBuilder, SearchBookRequest request, Map<String, Object> mapParams) {
-        sqlBuilder.append("SELECT b.ID, b.TITLE,b.AUTHOR, b.DESCRIPTION,b.QUANTITY,b.IMAGE\n");
+        sqlBuilder.append("SELECT b.ID, b.TITLE,b.AUTHOR, b.DESCRIPTION,b.QUANTITY,b.IMAGE,b.CREATED_AT ,b.PUBLISH_DATE\n");
         sqlBuilder.append(", COUNT(1) OVER(PARTITION BY 1) total_count \n");
         sqlBuilder.append("FROM books b \n");
         sqlBuilder.append("WHERE 1=1 \n");

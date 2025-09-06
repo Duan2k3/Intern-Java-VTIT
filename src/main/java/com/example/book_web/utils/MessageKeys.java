@@ -48,6 +48,9 @@ public class MessageKeys {
         public static final String BOOK_TITLE_NOT_TOO_LONG = "book.book_title_not_too_long";
         public static final String BOOK_AUTHOR_NOT_TOO_LONG = "book.book_author_not_too_long";
         public static final String BOOK_DESCRIPTION_TOO_LONG = "book.book_description_too_long";
+        public static final String BOOK_RETURNED_BEFORE_NOW = "book.book_returned_before_now";
+        public static final String CATEGORY_NOT_BLANK = "book.category_not_blank";
+        public static final String BOOK_PULISH_DATE_NOT_BLANK = "book.book_publish_date_not_blank";
 
         private BOOK() {
         }

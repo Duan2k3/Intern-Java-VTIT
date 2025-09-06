@@ -56,14 +56,7 @@ public class BorrowController {
         return ResponseConfig.success(null, "Thanh cong");
     }
 
-    @PutMapping("/update")
-    @Transactional
-    @PreAuthorize("hasAuthority('ROLE_UPDATE_BORROW')")
-    public ResponseEntity<?> updateBorrow(@RequestBody ReturnBookDTO bookDTO) {
 
-        return ResponseConfig.success(borrowService.updateBorrow(bookDTO), "Thanh cong");
-
-    }
 
     @GetMapping("/history")
     @PreAuthorize("hasAuthority('ROLE_CREATE_BORROW')")
@@ -79,7 +72,6 @@ public class BorrowController {
                                         @RequestHeader("Authorization") String authHeader
 
     ) {
-
         borrowService.returnBook(authHeader, request);
         return ResponseConfig.success(null, "Thanh cong");
 

@@ -100,15 +100,15 @@ public class SqlNativeUtils {
         strBuilder.append(")");
     }
 
-//    public static void findEqual(StringBuilder strBuilder, Object value, Map<String, Object> currentParams, String column) {
-//        if (DataUtil.isNullOrEmpty(value)) return;
-//        strBuilder.append(AND);
-//        strBuilder.append(column);
-//        strBuilder.append(EQUAL);
-//        strBuilder.append(column);
-//        strBuilder.append(CommonConstants.SPECIAL_CHARACTER.NEW_LINE);
-//        currentParams.put(column, value);
-//    }
+    public static void findEqual(StringBuilder strBuilder, Object value, Map<String, Object> currentParams, String column) {
+        if (DataUtil.isNullOrEmpty(value)) return;
+        strBuilder.append(AND);
+        strBuilder.append(column);
+        strBuilder.append(EQUAL);
+        strBuilder.append(column);
+        strBuilder.append(CommonConstants.SPECIAL_CHARACTER.NEW_LINE);
+        currentParams.put(column, value);
+    }
 public static void findEqual(StringBuilder strBuilder, Object value, Map<String, Object> currentParams, String column, String paramName) {
     if (DataUtil.isNullOrEmpty(value)) return;
     strBuilder.append(AND);

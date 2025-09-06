@@ -11,9 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ReturnBookRequest {
-    @JsonProperty("borrow_id")
     private Long borrowId;
 
-    @JsonProperty("book_id")
     private List<Long> bookIds;
 }

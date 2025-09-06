@@ -4,6 +4,8 @@ import com.example.book_web.dto.category.CategoryDTO;
 import com.example.book_web.entity.Category;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -25,6 +27,8 @@ public class BookDTO {
     private Integer quantity;
 
     private String description;
+
+    private Date publishDate;
 
     private List<Long> categoriesIds;
 }

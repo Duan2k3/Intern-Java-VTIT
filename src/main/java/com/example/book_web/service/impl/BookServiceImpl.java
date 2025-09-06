@@ -98,6 +98,7 @@ public class BookServiceImpl implements BookService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .quantity(request.getQuantity())
+                .publishDate(request.getPublishDate())
                 .build();
 
         Book savedBook = bookRepository.save(book);
@@ -124,6 +125,10 @@ public class BookServiceImpl implements BookService {
         if (bookExisting.isPresent() && !bookExisting.get().getId().equals(id)) {
             throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.BOOK_EXISTING), "400");
         }
+
+        if(request.getCategoriesIds().isEmpty()){
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.CATEGORY_NOT_BLANK),"400");
+        }
         Book book = existing.get();
         modelMapper.map(request, book);
         book.getCategories().clear();
@@ -135,6 +140,10 @@ public class BookServiceImpl implements BookService {
         }
         book.setUpdatedAt(LocalDate.now());
         book.setCategories(categories);
+        book.setPublishDate(request.getPublishDate());
+        if (request.getQuantity() <= 0) {
+            throw new DataNotFoundException(messageCommon.getMessage(MessageKeys.BOOK.QUANTITY_NOT_VALID), "400");
+        }
         log.info("Book updated successfully with ID: {}", book.getId());
         clearBookCache();
         bookRepository.save(book);
@@ -287,7 +296,11 @@ public class BookServiceImpl implements BookService {
             map.put("title", b.getTitle());
             map.put("description", b.getDescription());
             map.put("quantity", b.getQuantity());
-            map.put("createdAt", java.sql.Date.valueOf(b.getCreatedAt()));
+            map.put("createdAt",
+                    b.getCreatedAt() != null
+                            ? java.sql.Date.valueOf(b.getCreatedAt())
+                            : null
+            );
             return map;
         }).collect(Collectors.toList());
         // Load file jrxml từ resources
@@ -349,7 +362,6 @@ public class BookServiceImpl implements BookService {
 
         // 2. Nếu cache miss -> query DB
         Page<FilterBookDTO> page = bookCustomRepository.searchBook(request, pageable);
-
         PageResponse<FilterBookDTO> response = new PageResponse<>(
                 page.getNumber(),
                 page.getSize(),
@@ -385,7 +397,6 @@ public class BookServiceImpl implements BookService {
         return prefix + "::" + hash;
     }
 
-
     private void clearBookCache() {
         Set<String> keys = redisTemplate.keys(BOOK_CACHE_KEY + "*");
         if (keys != null && !keys.isEmpty()) {
@@ -395,6 +406,53 @@ public class BookServiceImpl implements BookService {
             log.info("No book cache entries found to clear");
         }
     }
+
+    @Override
+    public byte[] exportBooksToPdfWithFilter(SearchBookRequest request) throws JRException {
+        log.info("Exporting filtered books to PDF report with request: {}", request);
+        int pageNumber = request.getPageNumber() != null && request.getPageNumber() > 0
+                ? request.getPageNumber() - 1
+                : 0;
+        int pageSize = request.getPageSize() != null && request.getPageSize() > 0
+                ? request.getPageSize()
+                : 10;
+
+        // 1. Lấy dữ liệu đã filter (tái sử dụng repository searchBook)
+        List<FilterBookDTO> filteredBooks = bookCustomRepository.searchBook(
+                request,
+                PageRequest.of(pageNumber, pageSize)
+        ).getContent();
+
+        if (filteredBooks.isEmpty()) {
+            throw new DataNotFoundException("Không có dữ liệu để export", "400");
+        }
+
+        // 2. Chuyển đổi sang dạng Map cho Jasper
+        List<Map<String, Object>> data = filteredBooks.stream().map(b -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("title", b.getTitle());
+            map.put("description", b.getDescription());
+            map.put("quantity", b.getQuantity());
+            ;
+            return map;
+        }).collect(Collectors.toList());
+
+        // 3. Load file jrxml
+        InputStream reportStream = getClass().getResourceAsStream("/reports/Book.jrxml");
+        if (reportStream == null) {
+            throw new DataNotFoundException("Không tìm thấy template export", "400");
+        }
+
+        JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
+
+        // 4. Fill report với data
+        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(data);
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, new HashMap<>(), dataSource);
+
+        // 5. Export PDF
+        return JasperExportManager.exportReportToPdf(jasperPrint);
+    }
+
 
 }
 

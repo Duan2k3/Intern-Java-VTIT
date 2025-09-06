@@ -19,6 +19,7 @@ public class InforBorrowDto {
     private String userName;
     private BorrowStatus status;
     private Integer totalCount;
+    private Integer borrowId;
 
 
 }

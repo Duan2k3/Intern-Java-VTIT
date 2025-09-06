@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 public interface BorrowService {
     BorrowDTO createBorrow(String token , BorrowRequest request);
-    BorrowDTO updateBorrow( ReturnBookDTO bookDTO) ;
+
 
     List<Borrow> getAllBorrows();
     Borrow getBorrow(Long id) ;
@@ -32,5 +32,7 @@ public interface BorrowService {
 //    List<InforBorrowDto> getHistoryById(String token);
 
     PageResponse<InforBorrowDto> getList(String token ,FilterBorrowRequest request);
+
+
 
 }
