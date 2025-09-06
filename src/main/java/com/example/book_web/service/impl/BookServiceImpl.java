@@ -151,9 +151,6 @@ public class BookServiceImpl implements BookService {
 
     }
 
-    /**
-     * @param id
-     */
     @Override
     @Transactional
     public void deleteBook(Long id) {
@@ -187,18 +184,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void generateExcel(HttpServletResponse response)  {
-//        List<Book> books = bookRepository.findAll();
-//        ExcelExporter excelExporter = new ExcelExporter(books);
-//        excelExporter.export(response);
-////        ExcelBook excelBook = new ExcelBook(books);
-////        excelBook.exportBook(response);
+
     }
 
-    /**
-     * @param keyword
-     * @param pageable
-     * @return
-     */
+
     @Override
     public Page<Book> getBookByKeyWord(String keyword, Pageable pageable) {
         log.info("Searching books with keyword: {}", keyword);
@@ -237,10 +226,6 @@ public class BookServiceImpl implements BookService {
         return bookPage;
     }
 
-    /**
-     * @param id
-     * @return
-     */
     @Override
     public BookDTO getById(Long id) {
         log.info("Fetching book with ID: {}", id);
